@@ -324,7 +324,24 @@
 
         .footer { margin-top: auto; text-align: center; font-size: 0.85rem; color: var(--text-light); font-weight: 600; padding-bottom: 20px; font-family: 'Inter', sans-serif;}
         .hidden { display: none !important; }
-        .logout-text { color: var(--text-main); opacity: 0.5; font-size: 0.9rem; font-weight: 700; margin-top: 40px; display: block; text-align: center; cursor: pointer; }
+        
+        /* --- UPDATED LOGOUT BUTTON CSS --- */
+        .logout-text { 
+            color: #ec407a; /* Pink Initial */
+            font-size: 0.9rem; 
+            font-weight: 700; 
+            margin-top: 40px; 
+            display: block; 
+            text-align: center; 
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            opacity: 0.8;
+        }
+        .logout-text:hover { opacity: 1; }
+        .logout-text.confirming {
+            color: #e53935; /* Red Warning */
+            transform: scale(1.1);
+        }
 
     </style>
 </head>
@@ -480,6 +497,7 @@
         let currentUser = null;
         let inventoryUnsub = null;
         let allItems = [];
+        let logoutConfirmation = false; // State for logout logic
 
         // UI Refs
         const loginBtn = document.getElementById('login-btn');
@@ -502,7 +520,28 @@
 
         // Auth
         loginBtn.addEventListener('click', () => signInWithPopup(auth, provider));
-        logoutBtn.addEventListener('click', () => signOut(auth));
+
+        // --- UPDATED LOGOUT LOGIC ---
+        logoutBtn.addEventListener('click', () => {
+            if (!logoutConfirmation) {
+                // First click
+                logoutConfirmation = true;
+                logoutBtn.innerText = "Really?";
+                logoutBtn.classList.add('confirming');
+                
+                // Reset if they don't confirm within 3 seconds
+                setTimeout(() => {
+                    if (currentUser && logoutConfirmation) { // Only reset if still logged in
+                        logoutConfirmation = false;
+                        logoutBtn.innerText = "Sign Out";
+                        logoutBtn.classList.remove('confirming');
+                    }
+                }, 3000);
+            } else {
+                // Second click
+                signOut(auth);
+            }
+        });
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -529,6 +568,11 @@
                 onboardingOverlay.classList.add('hidden');
                 backgroundBlobs.classList.remove('app-active');
                 if(inventoryUnsub) inventoryUnsub();
+
+                // Reset Logout Button State
+                logoutConfirmation = false;
+                logoutBtn.innerText = "Sign Out";
+                logoutBtn.classList.remove('confirming');
             }
         });
 
