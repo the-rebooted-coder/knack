@@ -5,10 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Knack</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#e0e5ec">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Knack">
+    
+    <link rel="apple-touch-icon" href="https://i.ibb.co/5gCYMkGv/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="https://i.ibb.co/5gCYMkGv/apple-touch-icon.png">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Knack">
+    <meta property="og:description" content="Lose your knack of losing things. Organize your life.">
+    <meta property="og:image" content="https://i.ibb.co/cc9ssSwR/cover-image.png">
+    
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Knack">
+    <meta name="twitter:description" content="Lose your knack of losing things.">
+    <meta name="twitter:image" content="https://i.ibb.co/cc9ssSwR/cover-image.png">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
@@ -37,6 +55,7 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            overscroll-behavior-y: none;
         }
 
         h1, h2, h3 {
@@ -503,7 +522,7 @@
                     <div class="file-upload-wrapper">
                         <label for="inp-file" class="file-upload-label" id="file-label">
                             <i class="fas fa-camera" style="font-size: 24px; margin-bottom: 10px;"></i>
-                            <span>Click a picture</span>
+                            <span>Click a Picture</span>
                         </label>
                         <input type="file" id="inp-file" accept="image/*">
                     </div>
@@ -902,6 +921,13 @@
             reader.onload = () => resolve(reader.result);
             reader.onerror = error => reject(error);
         });
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.log('Service Worker error', err));
+        }
 
         window.showView = (viewName) => {
             document.getElementById('view-add').classList.add('hidden');
