@@ -98,7 +98,7 @@
             min-height: 100vh;
         }
 
-        /* --- UPDATED: Welcome Splash --- */
+        /* --- Welcome Splash --- */
         #welcome-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -130,7 +130,6 @@
             gap: 5px;
         }
 
-        /* Staggered Animation Logic */
         .welcome-text {
             opacity: 0;
             transform: translateY(20px);
@@ -298,7 +297,9 @@
             width: 70px; height: 70px; border-radius: 14px; margin-right: 20px; flex-shrink: 0;
             background: #e0e5ec; box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
             overflow: hidden; display: flex; align-items: center; justify-content: center;
+            position: relative;
         }
+        /* Updated Image CSS for object-fit */
         .item-img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: filter 0.3s;}
         .item-card:hover .item-img { filter: grayscale(0%); }
         
@@ -325,9 +326,8 @@
         .footer { margin-top: auto; text-align: center; font-size: 0.85rem; color: var(--text-light); font-weight: 600; padding-bottom: 20px; font-family: 'Inter', sans-serif;}
         .hidden { display: none !important; }
         
-        /* --- UPDATED LOGOUT BUTTON CSS --- */
         .logout-text { 
-            color: #ec407a; /* Pink Initial */
+            color: #ec407a; 
             font-size: 0.9rem; 
             font-weight: 700; 
             margin-top: 40px; 
@@ -339,7 +339,7 @@
         }
         .logout-text:hover { opacity: 1; }
         .logout-text.confirming {
-            color: #e53935; /* Red Warning */
+            color: #e53935;
             transform: scale(1.1);
         }
 
@@ -497,7 +497,7 @@
         let currentUser = null;
         let inventoryUnsub = null;
         let allItems = [];
-        let logoutConfirmation = false; // State for logout logic
+        let logoutConfirmation = false;
 
         // UI Refs
         const loginBtn = document.getElementById('login-btn');
@@ -521,24 +521,21 @@
         // Auth
         loginBtn.addEventListener('click', () => signInWithPopup(auth, provider));
 
-        // --- UPDATED LOGOUT LOGIC ---
+        // --- LOGOUT LOGIC ---
         logoutBtn.addEventListener('click', () => {
             if (!logoutConfirmation) {
-                // First click
                 logoutConfirmation = true;
                 logoutBtn.innerText = "Really?";
                 logoutBtn.classList.add('confirming');
                 
-                // Reset if they don't confirm within 3 seconds
                 setTimeout(() => {
-                    if (currentUser && logoutConfirmation) { // Only reset if still logged in
+                    if (currentUser && logoutConfirmation) {
                         logoutConfirmation = false;
                         logoutBtn.innerText = "Sign Out";
                         logoutBtn.classList.remove('confirming');
                     }
                 }, 3000);
             } else {
-                // Second click
                 signOut(auth);
             }
         });
@@ -547,7 +544,6 @@
             if (user) {
                 currentUser = user;
                 authScreen.classList.add('hidden');
-                
                 backgroundBlobs.classList.add('app-active');
 
                 const userDocRef = doc(db, "users", user.uid);
@@ -564,12 +560,11 @@
                 currentUser = null;
                 authScreen.classList.remove('hidden');
                 appScreen.classList.add('hidden');
-                welcomeOverlay.classList.remove('active'); // Hide smooth overlay
+                welcomeOverlay.classList.remove('active'); 
                 onboardingOverlay.classList.add('hidden');
                 backgroundBlobs.classList.remove('app-active');
                 if(inventoryUnsub) inventoryUnsub();
 
-                // Reset Logout Button State
                 logoutConfirmation = false;
                 logoutBtn.innerText = "Sign Out";
                 logoutBtn.classList.remove('confirming');
@@ -609,41 +604,35 @@
             }
         }
 
-        // --- IMPROVED WELCOME SEQUENCE ---
+        // --- WELCOME SEQUENCE ---
         function runWelcomeSequence(user) {
             loadInventory(); 
-            // Ensure app screen is visually ready behind the overlay
             appScreen.classList.remove('hidden');
 
             const firstName = user.displayName ? user.displayName.split(' ')[0] : 'Friend';
             const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
             
-            // Set text
-            welcomeGreeting.innerText = randomGreeting.replace(',', ''); // Remove comma for cleaner look if separate lines
+            welcomeGreeting.innerText = randomGreeting.replace(',', ''); 
             welcomeName.innerText = firstName;
             
-            // Reset state
             welcomeGreeting.classList.remove('in-view');
             welcomeName.classList.remove('in-view');
             
-            // Show Overlay
             welcomeOverlay.classList.add('active');
 
-            // Staggered Animation Sequence
             setTimeout(() => {
                 welcomeGreeting.classList.add('in-view');
-            }, 300); // Wait for overlay to appear
+            }, 300); 
 
             setTimeout(() => {
                 welcomeName.classList.add('in-view');
-            }, 600); // Name comes in slightly later
+            }, 600); 
 
             setTimeout(() => {
-                // Fade out everything
                 welcomeOverlay.classList.remove('active');
                 welcomeGreeting.classList.remove('in-view');
                 welcomeName.classList.remove('in-view');
-            }, 2500); // Total display time
+            }, 2500); 
         }
 
         // --- INVENTORY LOGIC ---
@@ -719,9 +708,27 @@
             }
 
             items.forEach(item => {
-                const imgHTML = item.image 
-                    ? `<img src="${item.image}" class="item-img" loading="lazy">` 
-                    : `<i class="fas fa-box item-icon" style="font-size: 24px; opacity:0.2;"></i>`;
+                // --- SMART IMAGE LOGIC ---
+                // If item has image in DB, use it.
+                // If not, use Pollinations AI to generate/fetch an isolated object image based on name.
+                // If that fails (onerror), fallback to LoremFlickr stock.
+                // If that fails, the box icon is hidden underneath but available structure-wise.
+                
+                let imgUrl = item.image;
+                let isPlaceholder = false;
+
+                if (!imgUrl) {
+                    // Generate a "product photo" style image based on item name
+                    imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(item.name)}%20minimal%20isolated%20white%20background?width=150&height=150&nologo=true`;
+                    isPlaceholder = true;
+                }
+
+                // The onerror handler falls back to a stock photo if the AI generation fails or times out
+                const imgHTML = `
+                    <img src="${imgUrl}" class="item-img" loading="lazy" 
+                         onerror="this.onerror=null;this.src='https://loremflickr.com/150/150/${encodeURIComponent(item.name)}/all';">
+                    <i class="fas fa-box item-icon" style="position: absolute; font-size: 24px; opacity:0.2; z-index:-1;"></i>
+                `;
 
                 const html = `
                 <div class="item-card">
