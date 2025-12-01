@@ -278,6 +278,14 @@
             transform: scale(0.98);
         }
         
+        /* Disabled Button Style for Offline Mode */
+        .neu-btn:disabled {
+            box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+            opacity: 0.6;
+            cursor: not-allowed;
+            color: var(--text-light);
+        }
+        
         /* Modal Styles */
         #edit-modal, #qr-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -635,6 +643,25 @@
         // Auth
         loginBtn.addEventListener('click', () => signInWithPopup(auth, provider));
 
+        // --- OFFLINE / ONLINE DETECTION ---
+        const saveBtn = document.getElementById('save-btn');
+
+        function updateOnlineStatus() {
+            if (navigator.onLine) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `<i class="fas fa-check"></i> Save`;
+            } else {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = `<i class="fas fa-wifi" style="text-decoration: line-through;"></i> Offline`;
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        
+        // Initial Check
+        updateOnlineStatus();
+
         // --- LOGOUT LOGIC ---
         logoutBtn.addEventListener('click', () => {
             if (!logoutConfirmation) {
@@ -802,7 +829,6 @@
         }
 
         // --- INVENTORY LOGIC ---
-        const saveBtn = document.getElementById('save-btn');
         const fileInput = document.getElementById('inp-file');
         const fileLabel = document.getElementById('file-label');
 
@@ -813,6 +839,12 @@
         });
 
         saveBtn.addEventListener('click', async () => {
+            // Double check connectivity
+            if (!navigator.onLine) {
+                alert("You are offline. Please connect to internet.");
+                return;
+            }
+
             const name = document.getElementById('inp-name').value;
             const loc = document.getElementById('inp-loc').value;
             const desc = document.getElementById('inp-desc').value;
