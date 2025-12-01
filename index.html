@@ -322,7 +322,7 @@
         }
         
         /* Modal Styles */
-        #edit-modal, #qr-overlay {
+        #edit-modal, #qr-overlay, #link-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px);
             z-index: 1500; display: flex; align-items: center; justify-content: center;
@@ -565,6 +565,17 @@
         </div>
     </div>
 
+    <div id="link-overlay" class="hidden" onclick="closeLinkModal(event)">
+        <div class="neu-card qr-card" style="width: 90%; max-width: 350px; margin: 0; background: #e0e5ec; padding: 40px 20px;">
+            <h2 style="margin: 10px 0 20px 0;">Knack on Desktop</h2>
+            <div style="background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; word-break: break-all; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);">
+                <a href="https://bit.ly/knackToLose" target="_blank" style="font-weight: 700; color: var(--primary); text-decoration: none; font-size: 1.1rem;">bit.ly/knackToLose</a>
+            </div>
+            <p style="color: var(--text-light); font-size: 0.9rem;">Open this link on your computer to access your stash!</p>
+            <button onclick="closeLinkModal(null)" class="neu-btn" style="margin-top: 20px;">Close</button>
+        </div>
+    </div>
+
     <div class="container">
         <div id="auth-screen" class="neu-card" style="text-align: center; padding-top: 50px; padding-bottom: 50px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
             <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
@@ -634,6 +645,12 @@
                         <div id="desktop-share-btn" class="hidden">
                             <button onclick="showQR()" class="neu-btn" style="color: var(--text-main);">
                                 <i class="fas fa-mobile-alt"></i> Send Knack to Phone
+                            </button>
+                        </div>
+
+                        <div id="mobile-share-btn" class="hidden">
+                            <button onclick="showLinkModal()" class="neu-btn" style="color: var(--text-main);">
+                                <i class="fas fa-desktop"></i> Send Knack to Desktop
                             </button>
                         </div>
 
@@ -837,8 +854,16 @@
 
         function checkDeviceType() {
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            // Check Standalone status specifically for this UI toggle
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
             if (!isMobile) {
+                // Desktop
                 document.getElementById('desktop-share-btn').classList.remove('hidden');
+            } else if (isMobile && isStandalone) {
+                // Mobile AND Installed
+                document.getElementById('mobile-share-btn').classList.remove('hidden');
             }
         }
 
@@ -866,6 +891,13 @@
         window.closeQR = (e) => {
             if(e && e.target !== e.currentTarget) return; // Only close if clicking background or button
             document.getElementById('qr-overlay').classList.add('hidden');
+        }
+
+        // --- LINK MODAL FUNCTIONALITY ---
+        window.showLinkModal = () => document.getElementById('link-overlay').classList.remove('hidden');
+        window.closeLinkModal = (e) => {
+             if(e && e.target !== e.currentTarget) return;
+             document.getElementById('link-overlay').classList.add('hidden');
         }
 
         // --- ONBOARDING LOGIC ---
