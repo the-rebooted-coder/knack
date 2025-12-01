@@ -15,13 +15,11 @@
 
     <style>
         :root {
-            /* Monochrome Palette */
             --bg: #e0e5ec;
             --text-main: #000000;
             --text-light: #555555;
             --primary: #000000; 
             
-            /* Neumorphism Shadows */
             --shadow-light: #ffffff;
             --shadow-dark: #a3b1c6;
         }
@@ -31,7 +29,7 @@
         body {
             background-color: var(--bg);
             color: var(--text-main);
-            font-family: 'Inter', sans-serif; /* Secondary Font */
+            font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
@@ -41,42 +39,55 @@
             position: relative;
         }
 
-        /* Typography Overrides */
         h1, h2, h3 {
-            font-family: 'Plus Jakarta Sans', sans-serif; /* Title Font */
-            letter-spacing: -0.05em; /* Tight tracking like Apple */
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -0.05em;
             color: var(--text-main);
         }
 
-        /* --- Monochrome Lottie Filter --- */
+        /* --- FIXED: Default Lottie (No Grayscale) --- */
         lottie-player {
-            filter: grayscale(100%) contrast(110%);
-            opacity: 0.9;
+            opacity: 1; /* Removed filter: grayscale */
         }
 
-        /* --- Ambient Background (Subtle Grayscale) --- */
+        /* --- Dynamic Frosted Background --- */
         .blob-cont {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100vh;
             z-index: -1;
             overflow: hidden;
-            opacity: 0.5;
+            opacity: 1;
+            transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--bg);
         }
+
+        .blob-cont.app-active { opacity: 0.15; }
+
         .blob {
             position: absolute;
             border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            animation: float 10s infinite ease-in-out alternate;
+            filter: blur(70px);
+            animation: float 20s infinite ease-in-out alternate;
         }
-        /* Changed blobs to white/gray/black for monochrome feel */
-        .blob-1 { background: #ffffff; width: 300px; height: 300px; top: -50px; left: -100px; }
-        .blob-2 { background: #bdc3c7; width: 250px; height: 250px; bottom: 50px; right: -50px; animation-delay: 2s; }
-        .blob-3 { background: #888888; width: 200px; height: 200px; top: 40%; left: 40%; animation-delay: 4s; opacity: 0.2; }
+
+        .blob-1 { 
+            background: linear-gradient(135deg, #f3f4f6 0%, #d1d5db 100%);
+            width: 450px; height: 450px; top: -100px; left: -100px; opacity: 0.8;
+        }
+        .blob-2 { 
+            background: radial-gradient(circle, #e5e7eb 0%, #9ca3af 100%);
+            width: 400px; height: 400px; bottom: -50px; right: -50px; animation-delay: -5s; opacity: 0.6;
+        }
+        .blob-3 { 
+            background: linear-gradient(to top, #d1d5db 0%, #6b7280 100%);
+            width: 300px; height: 300px; top: 40%; left: 30%; animation-delay: -10s; opacity: 0.4;
+        }
 
         @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(20px, 40px) scale(1.1); }
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            33% { transform: translate(30px, 50px) scale(1.1) rotate(10deg); }
+            66% { transform: translate(-20px, 20px) scale(0.9) rotate(-5deg); }
+            100% { transform: translate(0, 0) scale(1) rotate(0deg); }
         }
 
         /* --- Layout --- */
@@ -90,7 +101,7 @@
             min-height: 100vh;
         }
 
-        /* --- Welcome Splash Overlay --- */
+        /* --- Welcome Splash --- */
         #welcome-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -107,7 +118,7 @@
         .welcome-content h1 { font-size: 3rem; margin: 0; }
         .welcome-content p { font-size: 1.2rem; font-weight: 500; margin-top: 10px; color: var(--text-light); }
 
-        /* --- ONBOARDING OVERLAY --- */
+        /* --- ONBOARDING OVERLAY (FIXED LAYOUT) --- */
         #onboarding-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -123,7 +134,7 @@
             width: 100%;
             max-width: 450px;
             flex-grow: 1;
-            overflow: hidden;
+            overflow: hidden; /* Important: Hides non-active slides */
             position: relative;
             display: flex;
             align-items: center;
@@ -132,19 +143,20 @@
         .slider-track {
             display: flex;
             height: auto;
-            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); /* Snappy Apple ease */
             width: 100%;
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         .slide {
-            min-width: 100%;
+            /* FIXED: Force full width and no shrinking */
+            flex: 0 0 100%; 
+            width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
             text-align: center;
-            flex-shrink: 0;
         }
 
         .slide lottie-player { width: 220px; height: 220px; margin-bottom: 30px; }
@@ -168,15 +180,23 @@
         /* --- Components --- */
         .neu-card {
             border-radius: 24px;
-            background: var(--bg);
-            box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+            background: rgba(224, 229, 236, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.5), -9px -9px 16px rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.4);
             padding: 30px;
             margin-bottom: 30px;
             position: relative;
         }
 
+        .item-card.neu-card, #view-add .neu-card {
+            background: #e0e5ec; 
+            backdrop-filter: none;
+        }
+
         .neu-input {
-            width: 100%; border: none; background: var(--bg); border-radius: 16px;
+            width: 100%; border: none; background: #e0e5ec; border-radius: 16px;
             box-shadow: inset 6px 6px 10px var(--shadow-dark), inset -6px -6px 10px var(--shadow-light);
             padding: 20px; font-size: 16px; margin-bottom: 20px; color: var(--text-main);
             font-family: 'Inter', sans-serif; font-weight: 600; outline: none; transition: box-shadow 0.2s;
@@ -187,7 +207,7 @@
         .neu-input::placeholder { color: #888; font-weight: 500; }
 
         .neu-btn {
-            border: none; background: var(--bg); border-radius: 16px;
+            border: none; background: #e0e5ec; border-radius: 16px;
             box-shadow: 6px 6px 10px var(--shadow-dark), -6px -6px 10px var(--shadow-light);
             color: var(--primary); font-weight: 800; padding: 20px; cursor: pointer;
             text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; width: 100%;
@@ -209,7 +229,7 @@
         .file-upload-wrapper { position: relative; margin-bottom: 25px; }
         .file-upload-label {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 30px; border-radius: 16px; background: var(--bg);
+            padding: 30px; border-radius: 16px; background: #e0e5ec;
             box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
             color: var(--text-light); font-weight: 600; cursor: pointer; transition: color 0.2s;
         }
@@ -217,7 +237,7 @@
         input[type="file"] { display: none; }
 
         .nav-pill {
-            display: flex; background: var(--bg); padding: 6px; border-radius: 18px;
+            display: flex; background: #e0e5ec; padding: 6px; border-radius: 18px;
             box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); margin-bottom: 30px;
         }
         .nav-item {
@@ -226,27 +246,27 @@
             font-family: 'Inter', sans-serif;
         }
         .nav-item.active {
-            background: var(--bg); color: var(--primary);
+            background: #e0e5ec; color: var(--primary);
             box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
         }
 
         .item-card {
-            display: flex; align-items: center; background: var(--bg);
+            display: flex; align-items: center; background: #e0e5ec;
             border-radius: 20px; padding: 20px; margin-bottom: 25px;
             box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light); position: relative;
         }
         .item-img-box {
             width: 70px; height: 70px; border-radius: 14px; margin-right: 20px; flex-shrink: 0;
-            background: var(--bg); box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            background: #e0e5ec; box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
             overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
         .item-img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: filter 0.3s;}
-        .item-card:hover .item-img { filter: grayscale(0%); } /* Reveal color on interaction */
+        .item-card:hover .item-img { filter: grayscale(0%); }
         
         .item-info { flex-grow: 1; }
         .item-info h3 { margin: 0 0 6px 0; font-size: 1.2rem; }
         .tag-loc {
-            display: inline-block; font-size: 0.75rem; background: var(--bg); padding: 5px 12px;
+            display: inline-block; font-size: 0.75rem; background: #e0e5ec; padding: 5px 12px;
             border-radius: 8px; color: var(--primary); font-weight: 800;
             box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
             text-transform: uppercase; letter-spacing: 0.5px;
@@ -255,7 +275,7 @@
         
         .menu-btn { border: none; background: transparent; color: #999; font-size: 1.2rem; cursor: pointer; padding: 10px; }
         .item-menu-dropdown {
-            position: absolute; right: 20px; top: 60px; background: var(--bg); border-radius: 15px;
+            position: absolute; right: 20px; top: 60px; background: #e0e5ec; border-radius: 15px;
             box-shadow: 5px 5px 15px rgba(0,0,0,0.1), -5px -5px 15px var(--shadow-light);
             overflow: hidden; z-index: 100; min-width: 140px;
         }
@@ -271,7 +291,7 @@
 </head>
 <body>
 
-    <div class="blob-cont">
+    <div class="blob-cont" id="background-blobs">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
         <div class="blob blob-3"></div>
@@ -283,27 +303,27 @@
                 <div class="slide">
                       <div class="neu-card" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                         <lottie-player src="https://lottie.host/f8653b59-f116-4d78-9ca5-a801511049e5/amRRHiyMMq.json" background="transparent" speed="1" loop autoplay></lottie-player>
-                        <h2>Welcome to Knack</h2>
+                        <h2>Welcome to Knack.</h2>
                         <p>Lose your knack of<br>losing things.</p>
                     </div>
                 </div>
-                  <div class="slide">
+                <div class="slide">
                     <div class="neu-card" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <lottie-player src="https://lottie.host/3317bf33-6e8e-49d4-816e-2ba5c6fdba8c/gxSG07oLyI.json" background="transparent" speed="1" autoplay></lottie-player>
-                        <h2>Magic Sync</h2>
+                        <lottie-player src="https://lottie.host/3317bf33-6e8e-49d4-816e-2ba5c6fdba8c/gxSG07oLyI.json" background="transparent" speed="1" loop autoplay></lottie-player>
+                        <h2>Magic Sync.</h2>
                         <p>It’s everywhere you are. Phone, tablet, or laptop!</p>
                     </div>
                 </div>
                 <div class="slide">
                     <div class="neu-card" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <lottie-player src="https://lottie.host/3296742d-e60d-408b-8f4e-6cd9abe3c7c2/C3SwiaHU9l.json" background="transparent" speed="1" autoplay></lottie-player>
-                        <h2>Fort Knox</h2>
+                        <lottie-player src="https://lottie.host/3296742d-e60d-408b-8f4e-6cd9abe3c7c2/C3SwiaHU9l.json" background="transparent" speed="1" loop autoplay></lottie-player>
+                        <h2>Secure.</h2>
                         <p>Your data is encrypted, private, and secure. Only you know where your items are!</p>
                     </div>
                 </div>
-                 <div class="slide">
+                <div class="slide">
                     <div class="neu-card" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <lottie-player src="https://lottie.host/ceb67dfd-52e0-4654-9de3-996487929edc/eSEmbBVG6O.json" background="transparent" speed="1" autoplay></lottie-player>
+                        <lottie-player src="https://lottie.host/ceb67dfd-52e0-4654-9de3-996487929edc/eSEmbBVG6O.json" background="transparent" speed="1" loop autoplay></lottie-player>
                         <h2>Chaos Managed</h2>
                         <p>Have fun losing things!<br>All your items are indexed and ready to search.</p>
                     </div>
@@ -329,7 +349,7 @@
     </div>
 
     <div id="edit-modal" class="hidden">
-        <div class="neu-card" style="width: 90%; max-width: 350px; margin: 0;">
+        <div class="neu-card" style="width: 90%; max-width: 350px; margin: 0; background: #e0e5ec;">
             <h2 style="text-align: center; margin-bottom: 20px;">Edit Item</h2>
             <input type="hidden" id="edit-id">
             <input type="text" id="edit-name" class="neu-input" placeholder="Name">
@@ -342,7 +362,6 @@
     </div>
 
     <div class="container">
-        
         <div id="auth-screen" class="neu-card" style="text-align: center; padding-top: 50px; padding-bottom: 50px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
             <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                 <div style="font-size: 60px; margin-bottom: 20px;">⚡</div>
@@ -358,7 +377,6 @@
         </div>
 
         <div id="app-screen" class="hidden" style="flex-grow: 1;">
-            
             <div class="nav-pill">
                 <button onclick="showView('add')" id="nav-add" class="nav-item active">
                     <i class="fas fa-plus"></i> Add
@@ -431,6 +449,7 @@
         const appScreen = document.getElementById('app-screen');
         const welcomeOverlay = document.getElementById('welcome-overlay');
         const welcomeMsg = document.getElementById('welcome-msg');
+        const backgroundBlobs = document.getElementById('background-blobs');
         
         // Onboarding Refs
         const onboardingOverlay = document.getElementById('onboarding-overlay');
@@ -450,6 +469,8 @@
                 currentUser = user;
                 authScreen.classList.add('hidden');
                 
+                backgroundBlobs.classList.add('app-active');
+
                 const userDocRef = doc(db, "users", user.uid);
                 const userSnap = await getDoc(userDocRef);
 
@@ -466,6 +487,7 @@
                 appScreen.classList.add('hidden');
                 welcomeOverlay.classList.add('hidden');
                 onboardingOverlay.classList.add('hidden');
+                backgroundBlobs.classList.remove('app-active');
                 if(inventoryUnsub) inventoryUnsub();
             }
         });
@@ -506,7 +528,6 @@
         // --- WELCOME SEQUENCE ---
         function runWelcomeSequence(user) {
             loadInventory(); 
-            
             const firstName = user.displayName ? user.displayName.split(' ')[0] : 'Friend';
             const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
             welcomeMsg.innerHTML = `${randomGreeting}<br><span style="color:var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; font-weight:800; font-size:2rem; letter-spacing: -1px;">${firstName}</span>`;
@@ -563,7 +584,7 @@
                 document.getElementById('inp-loc').value = '';
                 document.getElementById('inp-desc').value = '';
                 fileInput.value = '';
-                fileLabel.innerHTML = `<i class="fas fa-camera"></i><span>Add Photo</span>`;
+                fileLabel.innerHTML = `<i class="fas fa-camera" style="font-size: 24px; margin-bottom: 10px;"></i><span>Add Photo</span>`;
                 
             } catch (e) {
                 alert("Error: " + e.message);
