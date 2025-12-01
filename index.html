@@ -154,26 +154,25 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-       import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyAWz3mkFz_sGAPIYynKglBJz3ub9113v9A",
-    authDomain: "knack-2ffba.firebaseapp.com",
-    projectId: "knack-2ffba",
-    storageBucket: "knack-2ffba.firebasestorage.app",
-    messagingSenderId: "683820138416",
-    appId: "1:683820138416:web:f051ad81092ca1730ee075",
-    measurementId: "G-BE7TKVTYPS"
-  };
+    const firebaseConfig = {
+        apiKey: "AIzaSyAWz3mkFz_sGAPIYynKglBJz3ub9113v9A",
+        authDomain: "knack-2ffba.firebaseapp.com",
+        projectId: "knack-2ffba",
+        storageBucket: "knack-2ffba.firebasestorage.app",
+        messagingSenderId: "683820138416",
+        appId: "1:683820138416:web:f051ad81092ca1730ee075",
+        measurementId: "G-BE7TKVTYPS"
+    };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
         let currentUser = null;
