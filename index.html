@@ -342,6 +342,36 @@
             transform: scale(1.1);
         }
 
+        /* --- TOAST NOTIFICATION CSS --- */
+        #toast-notification {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(31, 41, 55, 0.9);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 3000;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        #toast-notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            visibility: visible;
+        }
+
     </style>
 </head>
 <body>
@@ -351,6 +381,8 @@
         <div class="blob blob-2"></div>
         <div class="blob blob-3"></div>
     </div>
+
+    <div id="toast-notification">Stashed ✨</div>
 
     <div id="onboarding-overlay" class="hidden">
         <div class="slider-container">
@@ -507,6 +539,7 @@
         const welcomeGreeting = document.getElementById('welcome-greeting');
         const welcomeName = document.getElementById('welcome-name');
         const backgroundBlobs = document.getElementById('background-blobs');
+        const toast = document.getElementById('toast-notification'); // TOAST REF
         
         // Onboarding Refs
         const onboardingOverlay = document.getElementById('onboarding-overlay');
@@ -634,6 +667,15 @@
             }, 2500); 
         }
 
+        // --- TOAST FUNCTION ---
+        function showToast(msg) {
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
         // --- INVENTORY LOGIC ---
         const saveBtn = document.getElementById('save-btn');
         const fileInput = document.getElementById('inp-file');
@@ -676,6 +718,9 @@
                 fileInput.value = '';
                 fileLabel.innerHTML = `<i class="fas fa-camera" style="font-size: 24px; margin-bottom: 10px;"></i><span>Add Photo</span>`;
                 
+                // Show Success Toast
+                showToast("Stashed ✨");
+
             } catch (e) {
                 alert("Error: " + e.message);
             }
@@ -696,23 +741,18 @@
         }
 
         // --- GLOBAL CACHE FUNCTION ---
-        // Must be global to be called by inline `onload` HTML
         window.cacheItemImage = function(imgElement, id) {
             try {
-                // Create a canvas to draw the image
                 const canvas = document.createElement('canvas');
                 canvas.width = imgElement.naturalWidth;
                 canvas.height = imgElement.naturalHeight;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(imgElement, 0, 0);
 
-                // Convert to compressed Base64 (0.5 quality to save storage)
                 const dataURL = canvas.toDataURL('image/jpeg', 0.5);
-                
-                // Save to LocalStorage
                 localStorage.setItem(`knack_img_${id}`, dataURL);
             } catch (e) {
-                console.log("Caching failed (likely quota exceeded):", e);
+                console.log("Caching failed:", e);
             }
         };
 
@@ -728,30 +768,21 @@
             }
 
             items.forEach(item => {
-                // --- DEVICE CACHING LOGIC ---
-                // 1. Check DB (User uploaded)
-                // 2. Check Device Cache (LocalStorage)
-                // 3. Fetch from AI (and then cache it)
-                
-                let imgUrl = item.image; // From DB
+                let imgUrl = item.image; 
                 let cacheOnLoad = "";
                 let crossOrigin = "";
 
                 if (!imgUrl) {
-                    // Check Local Storage
                     const cached = localStorage.getItem(`knack_img_${item.id}`);
                     if (cached) {
                         imgUrl = cached;
                     } else {
-                        // Generate AI URL
                         imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(item.name)}%20minimal%20isolated%20white%20background?width=150&height=150&nologo=true`;
-                        // Enable caching on load
                         cacheOnLoad = `onload="window.cacheItemImage(this, '${item.id}')"`;
-                        crossOrigin = `crossorigin="anonymous"`; // Required for canvas export
+                        crossOrigin = `crossorigin="anonymous"`;
                     }
                 }
 
-                // Fallback to stock photo if AI fails
                 const fallback = `this.onerror=null;this.removeAttribute('onload');this.src='https://loremflickr.com/150/150/${encodeURIComponent(item.name)}/all';`;
 
                 const imgHTML = `
@@ -799,7 +830,6 @@
             if(!confirm("Are you sure you want to delete this item?")) return;
             try {
                 await deleteDoc(doc(db, "users", currentUser.uid, "items", id));
-                // Clean up local cache
                 localStorage.removeItem(`knack_img_${id}`);
             } catch(e) {
                 alert("Error deleting: " + e.message);
@@ -831,7 +861,6 @@
                     name_lower: newName.toLowerCase(),
                     location: newLoc
                 });
-                // Clear cache so it regenerates if name changed
                 localStorage.removeItem(`knack_img_${id}`);
                 window.closeEdit();
             } catch(e) {
