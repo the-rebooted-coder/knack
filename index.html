@@ -75,7 +75,7 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(236, 240, 243, 0.95);
             backdrop-filter: blur(15px);
-            z-index: 999;
+            z-index: 998; /* Below onboarding, above app */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -86,17 +86,61 @@
         .welcome-content h1 { font-size: 2.5rem; color: var(--primary); margin: 0; }
         .welcome-content p { font-size: 1.2rem; color: var(--text-main); font-weight: 700; margin-top: 10px;}
 
-        /* --- Edit Modal Overlay --- */
-        #edit-modal {
+        /* --- ONBOARDING OVERLAY (New) --- */
+        #onboarding-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(45, 52, 54, 0.4);
-            backdrop-filter: blur(5px);
-            z-index: 2000;
+            background: var(--bg);
+            z-index: 2000; /* Highest */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .slider-container {
+            width: 100%;
+            flex-grow: 1;
+            overflow: hidden;
+            position: relative;
             display: flex;
             align-items: center;
-            justify-content: center;
         }
+
+        .slider-track {
+            display: flex;
+            width: 400%; /* 4 Slides */
+            height: 100%;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .slide {
+            width: 25%; /* 100% / 4 */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .slide-icon { font-size: 80px; margin-bottom: 30px; filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.1)); }
+        .slide h2 { font-size: 2rem; color: var(--primary); margin-bottom: 15px; font-weight: 900; }
+        .slide p { font-size: 1.1rem; color: var(--text-light); line-height: 1.5; font-weight: 600; }
+
+        .onboarding-controls {
+            width: 100%;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--bg);
+        }
+
+        .dots { display: flex; gap: 10px; margin-bottom: 20px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; transition: 0.3s; }
+        .dot.active { background: var(--primary); transform: scale(1.3); }
 
         /* --- Components --- */
         .neu-card {
@@ -111,52 +155,35 @@
         }
 
         .neu-input {
-            width: 100%;
-            border: none;
-            background: var(--bg);
-            border-radius: 15px;
+            width: 100%; border: none; background: var(--bg); border-radius: 15px;
             box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
-            padding: 18px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            color: var(--text-main);
-            font-family: 'Nunito', sans-serif;
-            font-weight: 700;
-            outline: none;
-            transition: box-shadow 0.2s;
+            padding: 18px; font-size: 16px; margin-bottom: 20px; color: var(--text-main);
+            font-family: 'Nunito', sans-serif; font-weight: 700; outline: none; transition: box-shadow 0.2s;
         }
         .neu-input:focus {
             box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light), 0 0 5px rgba(108, 92, 231, 0.2);
         }
 
         .neu-btn {
-            border: none;
-            background: var(--bg);
-            border-radius: 15px;
+            border: none; background: var(--bg); border-radius: 15px;
             box-shadow: 6px 6px 10px var(--shadow-dark), -6px -6px 10px var(--shadow-light);
-            color: var(--primary);
-            font-weight: 900;
-            padding: 18px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
-            width: 100%;
+            color: var(--primary); font-weight: 900; padding: 18px; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; width: 100%;
             transition: transform 0.1s ease, box-shadow 0.1s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
         .neu-btn:active, .neu-btn.active {
             box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
-            transform: translateY(2px);
-            color: var(--accent);
+            transform: translateY(2px); color: var(--accent);
         }
         
-        .neu-btn.danger { color: var(--danger); }
-
-        /* File Upload */
+        /* Modal & Edit Styles */
+        #edit-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(45, 52, 54, 0.4); backdrop-filter: blur(5px);
+            z-index: 1500; display: flex; align-items: center; justify-content: center;
+        }
+        
         .file-upload-wrapper { position: relative; margin-bottom: 20px; }
         .file-upload-label {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -164,14 +191,11 @@
             box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
             color: var(--text-light); font-weight: 700; cursor: pointer;
         }
-        .file-upload-label i { font-size: 2rem; margin-bottom: 10px; }
         input[type="file"] { display: none; }
 
-        /* Navbar */
         .nav-pill {
             display: flex; background: var(--bg); padding: 5px; border-radius: 20px;
-            box-shadow: 6px 6px 10px var(--shadow-dark), -6px -6px 10px var(--shadow-light);
-            margin-bottom: 30px;
+            box-shadow: 6px 6px 10px var(--shadow-dark), -6px -6px 10px var(--shadow-light); margin-bottom: 30px;
         }
         .nav-item {
             flex: 1; text-align: center; padding: 12px; border-radius: 15px;
@@ -182,12 +206,10 @@
             box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
         }
 
-        /* List Items & Menus */
         .item-card {
             display: flex; align-items: center; background: var(--bg);
             border-radius: 20px; padding: 15px; margin-bottom: 20px;
-            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-            position: relative;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light); position: relative;
         }
         .item-img-box {
             width: 70px; height: 70px; border-radius: 15px; margin-right: 20px; flex-shrink: 0;
@@ -195,44 +217,25 @@
             overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
         .item-img { width: 100%; height: 100%; object-fit: cover; }
-        .item-icon { font-size: 30px; opacity: 0.3; }
         .item-info { flex-grow: 1; }
         .item-info h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--text-main); }
         .tag-loc {
-            display: inline-block; font-size: 0.75rem; background: var(--bg);
-            padding: 4px 10px; border-radius: 10px; color: var(--primary); font-weight: 800;
+            display: inline-block; font-size: 0.75rem; background: var(--bg); padding: 4px 10px;
+            border-radius: 10px; color: var(--primary); font-weight: 800;
             box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
         }
         
-        /* Item Menu Button */
-        .menu-btn {
-            border: none; background: transparent; color: var(--text-light);
-            font-size: 1.2rem; cursor: pointer; padding: 10px;
-        }
+        .menu-btn { border: none; background: transparent; color: var(--text-light); font-size: 1.2rem; cursor: pointer; padding: 10px; }
         .item-menu-dropdown {
-            position: absolute; right: 15px; top: 50px;
-            background: var(--bg); border-radius: 15px;
+            position: absolute; right: 15px; top: 50px; background: var(--bg); border-radius: 15px;
             box-shadow: 5px 5px 10px rgba(0,0,0,0.1), -5px -5px 10px var(--shadow-light);
-            overflow: hidden; z-index: 100; min-width: 120px;
-            border: 1px solid rgba(255,255,255,0.5);
+            overflow: hidden; z-index: 100; min-width: 120px; border: 1px solid rgba(255,255,255,0.5);
         }
-        .menu-option {
-            padding: 12px 20px; font-size: 0.9rem; font-weight: 700;
-            cursor: pointer; transition: background 0.2s;
-        }
+        .menu-option { padding: 12px 20px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
         .menu-option:hover { background: rgba(0,0,0,0.05); }
         .menu-option.delete { color: var(--danger); }
 
-        /* Footer */
-        .footer {
-            margin-top: auto;
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--text-light);
-            font-weight: 700;
-            padding-bottom: 10px;
-        }
-
+        .footer { margin-top: auto; text-align: center; font-size: 0.8rem; color: var(--text-light); font-weight: 700; padding-bottom: 10px; }
         .hidden { display: none !important; }
         .logout-text { color: var(--danger); font-size: 0.8rem; font-weight: 700; margin-top: 30px; display: block; text-align: center; cursor: pointer; }
 
@@ -244,6 +247,42 @@
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
         <div class="blob blob-3"></div>
+    </div>
+
+    <div id="onboarding-overlay" class="hidden">
+        <div class="slider-container">
+            <div class="slider-track" id="slider-track">
+                <div class="slide">
+                    <div class="slide-icon">👋</div>
+                    <h2>Welcome to Knack</h2>
+                    <p>Lose your knack of<br>losing things.</p>
+                </div>
+                <div class="slide">
+                    <div class="slide-icon">☁️</div>
+                    <h2>Sync Everything</h2>
+                    <p>All your items,<br>synced across your devices.</p>
+                </div>
+                <div class="slide">
+                    <div class="slide-icon">🔒</div>
+                    <h2>Private & Safe</h2>
+                    <p>All data stored privately<br>on Firebase, encrypted.</p>
+                </div>
+                <div class="slide">
+                    <div class="slide-icon">🎉</div>
+                    <h2>You are ready</h2>
+                    <p>Have fun<br>losing things!</p>
+                </div>
+            </div>
+        </div>
+        <div class="onboarding-controls">
+            <div class="dots">
+                <div class="dot active"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <button id="next-slide-btn" class="neu-btn">Next</button>
+        </div>
     </div>
 
     <div id="welcome-overlay" class="hidden">
@@ -328,8 +367,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        // Added doc, deleteDoc, updateDoc to imports
-        import { getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, query, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // Added getDoc and setDoc for onboarding Logic
+        import { getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, getDoc, setDoc, query, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAWz3mkFz_sGAPIYynKglBJz3ub9113v9A",
@@ -348,7 +387,7 @@
 
         let currentUser = null;
         let inventoryUnsub = null;
-        let allItems = []; // Store items globally for easier access
+        let allItems = [];
 
         // UI Refs
         const loginBtn = document.getElementById('login-btn');
@@ -358,41 +397,104 @@
         const welcomeOverlay = document.getElementById('welcome-overlay');
         const welcomeMsg = document.getElementById('welcome-msg');
         
+        // Onboarding Refs
+        const onboardingOverlay = document.getElementById('onboarding-overlay');
+        const sliderTrack = document.getElementById('slider-track');
+        const nextSlideBtn = document.getElementById('next-slide-btn');
+        const dots = document.querySelectorAll('.dot');
+        let currentSlide = 0;
+
         const greetings = ["Welcome back,", "Good to see you,", "Ready to organize,", "Hi there,", "Let's get sorted,", "Hello,"];
 
         // Auth
         loginBtn.addEventListener('click', () => signInWithPopup(auth, provider));
         logoutBtn.addEventListener('click', () => signOut(auth));
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                const firstName = user.displayName ? user.displayName.split(' ')[0] : 'Friend';
-                const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
-                welcomeMsg.innerHTML = `${randomGreeting}<br><span style="color:var(--text-main); font-weight:900; font-size:1.5rem;">${firstName}</span>`;
-                
                 authScreen.classList.add('hidden');
-                welcomeOverlay.classList.remove('hidden');
                 
-                loadInventory();
+                // --- ONBOARDING CHECK ---
+                const userDocRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userDocRef);
 
-                setTimeout(() => {
-                    welcomeOverlay.style.opacity = '0'; 
-                    setTimeout(() => {
-                        welcomeOverlay.classList.add('hidden');
-                        welcomeOverlay.style.opacity = '1';
-                        appScreen.classList.remove('hidden');
-                    }, 500); 
-                }, 2000);
+                if (!userSnap.exists() || !userSnap.data().onboarded) {
+                    // New User: Show Onboarding
+                    onboardingOverlay.classList.remove('hidden');
+                    loadInventory(); // Load data in bg
+                } else {
+                    // Existing User: Show Splash
+                    runWelcomeSequence(user);
+                }
 
             } else {
                 currentUser = null;
                 authScreen.classList.remove('hidden');
                 appScreen.classList.add('hidden');
                 welcomeOverlay.classList.add('hidden');
+                onboardingOverlay.classList.add('hidden');
                 if(inventoryUnsub) inventoryUnsub();
             }
         });
+
+        // --- ONBOARDING LOGIC ---
+        nextSlideBtn.addEventListener('click', async () => {
+            if (currentSlide < 3) {
+                currentSlide++;
+                updateSlider();
+            } else {
+                // Finish Onboarding
+                nextSlideBtn.innerHTML = "Starting...";
+                // Mark user as onboarded in DB
+                try {
+                    await setDoc(doc(db, "users", currentUser.uid), { onboarded: true }, { merge: true });
+                    
+                    // Fade out onboarding, run splash
+                    onboardingOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        onboardingOverlay.classList.add('hidden');
+                        onboardingOverlay.style.opacity = '1'; // Reset
+                        runWelcomeSequence(currentUser);
+                    }, 500);
+                } catch (e) {
+                    alert("Error saving profile: " + e.message);
+                }
+            }
+        });
+
+        function updateSlider() {
+            sliderTrack.style.transform = `translateX(-${currentSlide * 25}%)`;
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+            if (currentSlide === 3) {
+                nextSlideBtn.innerText = "Get Started";
+                nextSlideBtn.style.color = "var(--accent)";
+            }
+        }
+
+        // --- WELCOME SEQUENCE ---
+        function runWelcomeSequence(user) {
+            loadInventory(); // Ensure data loads
+            
+            const firstName = user.displayName ? user.displayName.split(' ')[0] : 'Friend';
+            const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+            welcomeMsg.innerHTML = `${randomGreeting}<br><span style="color:var(--text-main); font-weight:900; font-size:1.5rem;">${firstName}</span>`;
+            
+            welcomeOverlay.classList.remove('hidden');
+
+            setTimeout(() => {
+                welcomeOverlay.style.opacity = '0'; 
+                setTimeout(() => {
+                    welcomeOverlay.classList.add('hidden');
+                    welcomeOverlay.style.opacity = '1';
+                    appScreen.classList.remove('hidden');
+                }, 500); 
+            }, 2000);
+        }
+
+        // --- INVENTORY LOGIC ---
 
         // Add Item
         const saveBtn = document.getElementById('save-btn');
@@ -448,6 +550,7 @@
         const searchBar = document.getElementById('search-bar');
 
         function loadInventory() {
+            if (!currentUser) return;
             const q = query(collection(db, "users", currentUser.uid, "items"), orderBy("createdAt", "desc"));
             inventoryUnsub = onSnapshot(q, (snapshot) => {
                 allItems = [];
@@ -469,7 +572,7 @@
 
             items.forEach(item => {
                 const imgHTML = item.image 
-                    ? `<img src="${item.image}" class="item-img">` 
+                    ? `<img src="${item.image}" class="item-img" loading="lazy">` 
                     : `<i class="fas fa-box item-icon"></i>`;
 
                 const html = `
@@ -500,11 +603,8 @@
             renderList(filtered);
         });
 
-        // --- GLOBAL FUNCTIONS FOR ACTIONS ---
-        
-        // 1. Toggle Menu
+        // --- UTILS ---
         window.toggleMenu = (id) => {
-            // Close all other menus first
             document.querySelectorAll('.item-menu-dropdown').forEach(el => {
                 if (el.id !== `menu-${id}`) el.classList.add('hidden');
             });
@@ -512,7 +612,6 @@
             menu.classList.toggle('hidden');
         };
 
-        // 2. Delete Item
         window.deleteItem = async (id) => {
             if(!confirm("Are you sure you want to delete this item?")) return;
             try {
@@ -522,7 +621,6 @@
             }
         };
 
-        // 3. Edit Item (Open Modal)
         window.prepEdit = (id) => {
             const item = allItems.find(i => i.id === id);
             if (!item) return;
@@ -532,14 +630,11 @@
             document.getElementById('edit-loc').value = item.location;
             
             document.getElementById('edit-modal').classList.remove('hidden');
-            document.getElementById(`menu-${id}`).classList.add('hidden'); // Close menu
+            document.getElementById(`menu-${id}`).classList.add('hidden');
         };
 
-        window.closeEdit = () => {
-            document.getElementById('edit-modal').classList.add('hidden');
-        };
+        window.closeEdit = () => document.getElementById('edit-modal').classList.add('hidden');
 
-        // 4. Save Edit
         window.saveEdit = async () => {
             const id = document.getElementById('edit-id').value;
             const newName = document.getElementById('edit-name').value;
@@ -559,7 +654,6 @@
             }
         };
 
-        // Utilities
         const toBase64 = file => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -574,8 +668,6 @@
             document.getElementById('nav-list').classList.remove('active');
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
             document.getElementById(`nav-${viewName}`).classList.add('active');
-            
-            // Close any open menus when switching views
             document.querySelectorAll('.item-menu-dropdown').forEach(el => el.classList.add('hidden'));
         }
     </script>
