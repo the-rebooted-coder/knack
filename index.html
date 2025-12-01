@@ -14,6 +14,7 @@
             --text-light: #8993b0;
             --primary: #6c5ce7; 
             --accent: #00b894;
+            --danger: #ff7675;
             
             --shadow-light: #ffffff;
             --shadow-dark: #d1d9e6;
@@ -63,6 +64,9 @@
             max-width: 450px;
             padding: 30px 20px;
             z-index: 10;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         /* --- Welcome Splash Overlay --- */
@@ -82,6 +86,18 @@
         .welcome-content h1 { font-size: 2.5rem; color: var(--primary); margin: 0; }
         .welcome-content p { font-size: 1.2rem; color: var(--text-main); font-weight: 700; margin-top: 10px;}
 
+        /* --- Edit Modal Overlay --- */
+        #edit-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(45, 52, 54, 0.4);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         /* --- Components --- */
         .neu-card {
             border-radius: 30px;
@@ -91,6 +107,7 @@
             padding: 30px;
             margin-bottom: 30px;
             border: 1px solid rgba(255,255,255,0.4);
+            position: relative;
         }
 
         .neu-input {
@@ -136,6 +153,8 @@
             transform: translateY(2px);
             color: var(--accent);
         }
+        
+        .neu-btn.danger { color: var(--danger); }
 
         /* File Upload */
         .file-upload-wrapper { position: relative; margin-bottom: 20px; }
@@ -163,11 +182,12 @@
             box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
         }
 
-        /* List Items */
+        /* List Items & Menus */
         .item-card {
             display: flex; align-items: center; background: var(--bg);
             border-radius: 20px; padding: 15px; margin-bottom: 20px;
             box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+            position: relative;
         }
         .item-img-box {
             width: 70px; height: 70px; border-radius: 15px; margin-right: 20px; flex-shrink: 0;
@@ -176,16 +196,45 @@
         }
         .item-img { width: 100%; height: 100%; object-fit: cover; }
         .item-icon { font-size: 30px; opacity: 0.3; }
+        .item-info { flex-grow: 1; }
         .item-info h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--text-main); }
         .tag-loc {
             display: inline-block; font-size: 0.75rem; background: var(--bg);
             padding: 4px 10px; border-radius: 10px; color: var(--primary); font-weight: 800;
             box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
         }
-        .item-desc { font-size: 0.85rem; color: var(--text-light); margin: 5px 0 0 0; }
+        
+        /* Item Menu Button */
+        .menu-btn {
+            border: none; background: transparent; color: var(--text-light);
+            font-size: 1.2rem; cursor: pointer; padding: 10px;
+        }
+        .item-menu-dropdown {
+            position: absolute; right: 15px; top: 50px;
+            background: var(--bg); border-radius: 15px;
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.1), -5px -5px 10px var(--shadow-light);
+            overflow: hidden; z-index: 100; min-width: 120px;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        .menu-option {
+            padding: 12px 20px; font-size: 0.9rem; font-weight: 700;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .menu-option:hover { background: rgba(0,0,0,0.05); }
+        .menu-option.delete { color: var(--danger); }
+
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            font-weight: 700;
+            padding-bottom: 10px;
+        }
 
         .hidden { display: none !important; }
-        .logout-text { color: #ff7675; font-size: 0.8rem; font-weight: 700; margin-top: 30px; display: block; text-align: center; cursor: pointer; }
+        .logout-text { color: var(--danger); font-size: 0.8rem; font-weight: 700; margin-top: 30px; display: block; text-align: center; cursor: pointer; }
 
     </style>
 </head>
@@ -204,18 +253,36 @@
         </div>
     </div>
 
+    <div id="edit-modal" class="hidden">
+        <div class="neu-card" style="width: 90%; max-width: 350px; margin: 0;">
+            <h2 style="text-align: center;">Edit Item</h2>
+            <input type="hidden" id="edit-id">
+            <input type="text" id="edit-name" class="neu-input" placeholder="Name">
+            <input type="text" id="edit-loc" class="neu-input" placeholder="Location">
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeEdit()" class="neu-btn" style="color: var(--text-light);">Cancel</button>
+                <button onclick="saveEdit()" class="neu-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         
-        <div id="auth-screen" class="neu-card" style="text-align: center; padding-top: 50px; padding-bottom: 50px;">
-            <div style="font-size: 60px; margin-bottom: 20px;">⚡</div>
-            <h1 style="margin:0;">Knack</h1>
-            <p style="margin-bottom: 40px; margin-top:5px;">Organize your life.</p>
-            <button id="login-btn" class="neu-btn">
-                <i class="fab fa-google"></i> Continue with Google
-            </button>
+        <div id="auth-screen" class="neu-card" style="text-align: center; padding-top: 50px; padding-bottom: 50px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                <div style="font-size: 60px; margin-bottom: 20px;">⚡</div>
+                <h1 style="margin:0;">Knack</h1>
+                <p style="margin-bottom: 40px; margin-top:5px;">Organize your life.</p>
+                <button id="login-btn" class="neu-btn">
+                    <i class="fab fa-google"></i> Continue with Google
+                </button>
+            </div>
+            <div class="footer">
+                &lt;/&gt; with 💭 by Spandan.
+            </div>
         </div>
 
-        <div id="app-screen" class="hidden">
+        <div id="app-screen" class="hidden" style="flex-grow: 1;">
             
             <div class="nav-pill">
                 <button onclick="showView('add')" id="nav-add" class="nav-item active">
@@ -261,7 +328,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // Added doc, deleteDoc, updateDoc to imports
+        import { getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, query, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAWz3mkFz_sGAPIYynKglBJz3ub9113v9A",
@@ -280,6 +348,7 @@
 
         let currentUser = null;
         let inventoryUnsub = null;
+        let allItems = []; // Store items globally for easier access
 
         // UI Refs
         const loginBtn = document.getElementById('login-btn');
@@ -289,15 +358,7 @@
         const welcomeOverlay = document.getElementById('welcome-overlay');
         const welcomeMsg = document.getElementById('welcome-msg');
         
-        // Random Greetings List
-        const greetings = [
-            "Welcome back,",
-            "Good to see you,",
-            "Ready to organize,",
-            "Hi there,",
-            "Let's get sorted,",
-            "Hello,"
-        ];
+        const greetings = ["Welcome back,", "Good to see you,", "Ready to organize,", "Hi there,", "Let's get sorted,", "Hello,"];
 
         // Auth
         loginBtn.addEventListener('click', () => signInWithPopup(auth, provider));
@@ -306,34 +367,29 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                
-                // 1. Prepare Welcome Screen
                 const firstName = user.displayName ? user.displayName.split(' ')[0] : 'Friend';
                 const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
                 welcomeMsg.innerHTML = `${randomGreeting}<br><span style="color:var(--text-main); font-weight:900; font-size:1.5rem;">${firstName}</span>`;
                 
-                // 2. Hide Login, Show Welcome
                 authScreen.classList.add('hidden');
                 welcomeOverlay.classList.remove('hidden');
                 
-                // 3. Load Data immediately in background
                 loadInventory();
 
-                // 4. Wait 2 seconds, then show App
                 setTimeout(() => {
-                    welcomeOverlay.style.opacity = '0'; // Fade out effect
+                    welcomeOverlay.style.opacity = '0'; 
                     setTimeout(() => {
                         welcomeOverlay.classList.add('hidden');
-                        welcomeOverlay.style.opacity = '1'; // Reset for next time
+                        welcomeOverlay.style.opacity = '1';
                         appScreen.classList.remove('hidden');
-                    }, 500); // Wait for fade out to finish
+                    }, 500); 
                 }, 2000);
 
             } else {
                 currentUser = null;
                 authScreen.classList.remove('hidden');
                 appScreen.classList.add('hidden');
-                welcomeOverlay.classList.add('hidden'); // Ensure hidden on logout
+                welcomeOverlay.classList.add('hidden');
                 if(inventoryUnsub) inventoryUnsub();
             }
         });
@@ -380,7 +436,6 @@
                 document.getElementById('inp-desc').value = '';
                 fileInput.value = '';
                 fileLabel.innerHTML = `<i class="fas fa-camera"></i><span>Add Photo</span>`;
-                // window.showView('list'); // Optional auto-switch
                 
             } catch (e) {
                 alert("Error: " + e.message);
@@ -391,7 +446,6 @@
         // List
         const listContainer = document.getElementById('inventory-list');
         const searchBar = document.getElementById('search-bar');
-        let allItems = [];
 
         function loadInventory() {
             const q = query(collection(db, "users", currentUser.uid, "items"), orderBy("createdAt", "desc"));
@@ -426,6 +480,13 @@
                         <div class="tag-loc"><i class="fas fa-map-marker-alt"></i> ${item.location}</div>
                         <p class="item-desc">${item.description || ''}</p>
                     </div>
+                    <button class="menu-btn" onclick="window.toggleMenu('${item.id}')">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div id="menu-${item.id}" class="item-menu-dropdown hidden">
+                        <div class="menu-option" onclick="window.prepEdit('${item.id}')">Edit</div>
+                        <div class="menu-option delete" onclick="window.deleteItem('${item.id}')">Delete</div>
+                    </div>
                 </div>`;
                 listContainer.innerHTML += html;
             });
@@ -439,6 +500,66 @@
             renderList(filtered);
         });
 
+        // --- GLOBAL FUNCTIONS FOR ACTIONS ---
+        
+        // 1. Toggle Menu
+        window.toggleMenu = (id) => {
+            // Close all other menus first
+            document.querySelectorAll('.item-menu-dropdown').forEach(el => {
+                if (el.id !== `menu-${id}`) el.classList.add('hidden');
+            });
+            const menu = document.getElementById(`menu-${id}`);
+            menu.classList.toggle('hidden');
+        };
+
+        // 2. Delete Item
+        window.deleteItem = async (id) => {
+            if(!confirm("Are you sure you want to delete this item?")) return;
+            try {
+                await deleteDoc(doc(db, "users", currentUser.uid, "items", id));
+            } catch(e) {
+                alert("Error deleting: " + e.message);
+            }
+        };
+
+        // 3. Edit Item (Open Modal)
+        window.prepEdit = (id) => {
+            const item = allItems.find(i => i.id === id);
+            if (!item) return;
+            
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-name').value = item.name;
+            document.getElementById('edit-loc').value = item.location;
+            
+            document.getElementById('edit-modal').classList.remove('hidden');
+            document.getElementById(`menu-${id}`).classList.add('hidden'); // Close menu
+        };
+
+        window.closeEdit = () => {
+            document.getElementById('edit-modal').classList.add('hidden');
+        };
+
+        // 4. Save Edit
+        window.saveEdit = async () => {
+            const id = document.getElementById('edit-id').value;
+            const newName = document.getElementById('edit-name').value;
+            const newLoc = document.getElementById('edit-loc').value;
+
+            if(!newName || !newLoc) return alert("Fields cannot be empty");
+
+            try {
+                await updateDoc(doc(db, "users", currentUser.uid, "items", id), {
+                    name: newName,
+                    name_lower: newName.toLowerCase(),
+                    location: newLoc
+                });
+                window.closeEdit();
+            } catch(e) {
+                alert("Error updating: " + e.message);
+            }
+        };
+
+        // Utilities
         const toBase64 = file => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -453,6 +574,9 @@
             document.getElementById('nav-list').classList.remove('active');
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
             document.getElementById(`nav-${viewName}`).classList.add('active');
+            
+            // Close any open menus when switching views
+            document.querySelectorAll('.item-menu-dropdown').forEach(el => el.classList.add('hidden'));
         }
     </script>
 </body>
