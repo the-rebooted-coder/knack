@@ -313,14 +313,35 @@
         .item-desc { font-size: 0.9rem; color: var(--text-light); margin: 5px 0 0 0; }
         
         .menu-btn { border: none; background: transparent; color: #999; font-size: 1.2rem; cursor: pointer; padding: 10px; }
+        
         .item-menu-dropdown {
             position: absolute; right: 20px; top: 60px; background: #e0e5ec; border-radius: 15px;
             box-shadow: 5px 5px 15px rgba(0,0,0,0.1), -5px -5px 15px var(--shadow-light);
-            overflow: hidden; z-index: 100; min-width: 140px;
+            overflow: hidden; z-index: 100; min-width: 150px;
         }
-        .menu-option { padding: 15px 20px; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--text-main); }
+
+        /* --- UPDATED MENU ITEM CSS --- */
+        .menu-option { 
+            padding: 15px 20px; 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            color: var(--text-main); 
+            display: flex;
+            align-items: center;
+            gap: 12px; /* Space between icon and text */
+            transition: background 0.2s;
+        }
         .menu-option:active { background: #d1d9e6; }
-        .menu-option.delete { color: var(--text-main); text-decoration: line-through; opacity: 0.6; }
+        
+        .menu-option i { width: 16px; text-align: center; }
+
+        .menu-option.delete { 
+            color: #ef4444; /* Red Text */
+            text-decoration: none; /* No strikethrough */
+            opacity: 1; 
+        }
+        .menu-option.delete:active { background: #fee2e2; }
 
         .footer { margin-top: auto; text-align: center; font-size: 0.85rem; color: var(--text-light); font-weight: 600; padding-bottom: 20px; font-family: 'Inter', sans-serif;}
         .hidden { display: none !important; }
@@ -539,7 +560,7 @@
         const welcomeGreeting = document.getElementById('welcome-greeting');
         const welcomeName = document.getElementById('welcome-name');
         const backgroundBlobs = document.getElementById('background-blobs');
-        const toast = document.getElementById('toast-notification'); // TOAST REF
+        const toast = document.getElementById('toast-notification'); 
         
         // Onboarding Refs
         const onboardingOverlay = document.getElementById('onboarding-overlay');
@@ -718,7 +739,6 @@
                 fileInput.value = '';
                 fileLabel.innerHTML = `<i class="fas fa-camera" style="font-size: 24px; margin-bottom: 10px;"></i><span>Add Photo</span>`;
                 
-                // Show Success Toast
                 showToast("Stashed ✨");
 
             } catch (e) {
@@ -790,6 +810,7 @@
                     <i class="fas fa-box item-icon" style="position: absolute; font-size: 24px; opacity:0.2; z-index:-1;"></i>
                 `;
 
+                // --- UPDATED DROPDOWN MENU HTML ---
                 const html = `
                 <div class="item-card">
                     <div class="item-img-box">${imgHTML}</div>
@@ -802,8 +823,12 @@
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
                     <div id="menu-${item.id}" class="item-menu-dropdown hidden">
-                        <div class="menu-option" onclick="window.prepEdit('${item.id}')">Edit</div>
-                        <div class="menu-option delete" onclick="window.deleteItem('${item.id}')">Delete</div>
+                        <div class="menu-option" onclick="window.prepEdit('${item.id}')">
+                            <i class="fas fa-pen"></i> Edit
+                        </div>
+                        <div class="menu-option delete" onclick="window.deleteItem('${item.id}')">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </div>
                     </div>
                 </div>`;
                 listContainer.innerHTML += html;
