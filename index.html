@@ -424,6 +424,18 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
+        /* Profile Pic Styling */
+        .profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 20px auto;
+            border: 4px solid #e0e5ec;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+            display: block;
+        }
+
     </style>
 </head>
 <body>
@@ -502,7 +514,6 @@
 
     <div id="qr-overlay" class="hidden" onclick="closeQR(event)">
         <div class="neu-card qr-card" style="width: 90%; max-width: 350px; margin: 0; background: #e0e5ec; padding: 40px 20px;">
-            <lottie-player src="https://lottie.host/02022718-d784-469b-986c-486a480d196f/2U5g9H5w7X.json" background="transparent" speed="1" style="width: 150px; height: 150px; margin: 0 auto;" loop autoplay></lottie-player>
             <h2 style="margin: 10px 0 20px 0;">Knack on Mobile</h2>
             <div id="qr-code-target" style="display: flex; justify-content: center; margin-bottom: 20px; padding: 15px; background: white; border-radius: 15px; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);"></div>
             <p style="color: var(--text-light); font-size: 0.9rem;">Scan with your phone to sync instantly!</p>
@@ -569,7 +580,8 @@
 
             <div id="view-more" class="hidden">
                 <div class="neu-card" style="text-align: center; padding-top: 40px; padding-bottom: 40px;">
-                    <lottie-player src="https://lottie.host/93388713-7d72-4638-b769-6d60c5c36195/lYn6E7k4e0.json" background="transparent" speed="1" style="width: 150px; height: 150px; margin: 0 auto 20px auto;" loop autoplay></lottie-player>
+                    <img id="settings-pic" class="profile-pic" src="https://ui-avatars.com/api/?name=User" alt="Profile">
+                    
                     <h2 id="settings-name">Settings</h2>
                     <p style="color: var(--text-light); margin-bottom: 30px;">Manage your Knack experience</p>
 
@@ -687,9 +699,15 @@
                 authScreen.classList.add('hidden');
                 backgroundBlobs.classList.add('app-active');
                 
-                // Update Name in Settings
+                // Update Name & Pic in Settings
                 const fName = user.displayName ? user.displayName.split(' ')[0] : 'User';
                 document.getElementById('settings-name').innerText = fName;
+                
+                if (user.photoURL) {
+                    document.getElementById('settings-pic').src = user.photoURL;
+                } else {
+                    document.getElementById('settings-pic').src = `https://ui-avatars.com/api/?name=${fName}`;
+                }
 
                 const userDocRef = doc(db, "users", user.uid);
                 const userSnap = await getDoc(userDocRef);
