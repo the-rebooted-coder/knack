@@ -522,6 +522,10 @@
             </div>
             
             <div id="logout-btn" class="logout-text">Sign Out</div>
+            
+            <div class="footer" style="margin-top: 30px;">
+                &lt;/&gt; with 💭 by Spandan.
+            </div>
         </div>
     </div>
 
@@ -849,13 +853,12 @@
             menu.classList.toggle('hidden');
         };
 
-        // --- UPDATED DELETE ITEM ---
         window.deleteItem = async (id) => {
             if(!confirm("Are you sure you want to delete this item?")) return;
             try {
                 await deleteDoc(doc(db, "users", currentUser.uid, "items", id));
                 localStorage.removeItem(`knack_img_${id}`);
-                showToast("Deleted ❌"); // Toast Notification for Deletion
+                showToast("Deleted ❌");
             } catch(e) {
                 alert("Error deleting: " + e.message);
             }
