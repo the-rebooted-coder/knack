@@ -107,6 +107,23 @@
             100% { transform: translate(0, 0) scale(1) rotate(0deg); }
         }
 
+        /* --- LOADING SPLASH --- */
+        #loading-splash {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 9999; /* Highest priority */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.6s ease-out;
+        }
+        #loading-splash.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
         /* --- Layout --- */
         .container {
             width: 100%;
@@ -125,7 +142,7 @@
             background: rgba(224, 229, 236, 0.95);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            z-index: 3000; /* Highest priority */
+            z-index: 3000;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -472,6 +489,11 @@
 </head>
 <body>
 
+    <div id="loading-splash">
+        <h1 style="font-size: 3rem; letter-spacing: -2px; margin-bottom: 10px;">Knack.</h1>
+        <lottie-player src="https://lottie.host/6cee2a60-7167-43ed-86c0-b87732424e6c/m4Er1zL6rJ.json" background="transparent" speed="1" style="width: 100px; height: 100px;" loop autoplay></lottie-player>
+    </div>
+
     <div class="blob-cont" id="background-blobs">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
@@ -577,7 +599,7 @@
     </div>
 
     <div class="container">
-        <div id="auth-screen" class="neu-card" style="text-align: center; padding-top: 50px; padding-bottom: 50px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        <div id="auth-screen" class="neu-card hidden" style="text-align: center; padding-top: 50px; padding-bottom: 50px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
             <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                 <div style="font-size: 60px; margin-bottom: 20px;">⚡</div>
                 <h1 style="margin:0; font-size: 3.5rem; letter-spacing: -3px;">Knack.</h1>
@@ -806,9 +828,16 @@
         });
 
         onAuthStateChanged(auth, async (user) => {
+            // Get Splash Element
+            const splash = document.getElementById('loading-splash');
+
             if (user) {
                 currentUser = user;
                 authScreen.classList.add('hidden');
+                
+                // Show App Screen (Remove hidden class)
+                appScreen.classList.remove('hidden');
+                
                 backgroundBlobs.classList.add('app-active');
                 
                 // Update Name & Pic in Settings
@@ -836,8 +865,11 @@
 
             } else {
                 currentUser = null;
+                
+                // Show Auth Screen
                 authScreen.classList.remove('hidden');
                 appScreen.classList.add('hidden');
+                
                 welcomeOverlay.classList.remove('active'); 
                 onboardingOverlay.classList.add('hidden');
                 backgroundBlobs.classList.remove('app-active');
@@ -849,6 +881,14 @@
                 
                 // Reset View
                 showView('add');
+            }
+
+            // REMOVE SPLASH SCREEN FADE OUT
+            if(splash) {
+                setTimeout(() => {
+                    splash.classList.add('fade-out');
+                    setTimeout(() => splash.remove(), 600); // Wait for transition
+                }, 500); // Slight buffer
             }
         });
 
