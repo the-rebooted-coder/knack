@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
         :root {
@@ -277,7 +278,8 @@
             transform: scale(0.98);
         }
         
-        #edit-modal {
+        /* Modal Styles */
+        #edit-modal, #qr-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px);
             z-index: 1500; display: flex; align-items: center; justify-content: center;
@@ -301,6 +303,7 @@
             flex: 1; text-align: center; padding: 14px; border-radius: 14px;
             font-weight: 700; color: #888; cursor: pointer; border: none; background: transparent;
             font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
         }
         .nav-item.active {
             background: #e0e5ec; color: var(--primary);
@@ -363,22 +366,14 @@
 
         .footer { margin-top: auto; text-align: center; font-size: 0.85rem; color: var(--text-light); font-weight: 600; padding-bottom: 20px; font-family: 'Inter', sans-serif;}
         .hidden { display: none !important; }
-        
-        .logout-text { 
-            color: #ec407a; 
-            font-size: 0.9rem; 
-            font-weight: 700; 
-            margin-top: 40px; 
-            display: block; 
-            text-align: center; 
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            opacity: 0.8;
+
+        /* Logout Button Specifics */
+        .logout-btn-style {
+            color: #ec407a;
         }
-        .logout-text:hover { opacity: 1; }
-        .logout-text.confirming {
+        .logout-btn-style.confirming {
             color: #e53935;
-            transform: scale(1.1);
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
         }
 
         /* --- TOAST NOTIFICATION CSS --- */
@@ -409,6 +404,16 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
             visibility: visible;
+        }
+
+        /* QR Animation */
+        .qr-card {
+            text-align: center;
+            animation: popIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
     </style>
@@ -487,6 +492,16 @@
         </div>
     </div>
 
+    <div id="qr-overlay" class="hidden" onclick="closeQR(event)">
+        <div class="neu-card qr-card" style="width: 90%; max-width: 350px; margin: 0; background: #e0e5ec; padding: 40px 20px;">
+            <lottie-player src="https://lottie.host/02022718-d784-469b-986c-486a480d196f/2U5g9H5w7X.json" background="transparent" speed="1" style="width: 150px; height: 150px; margin: 0 auto;" loop autoplay></lottie-player>
+            <h2 style="margin: 10px 0 20px 0;">Knack on Mobile</h2>
+            <div id="qr-code-target" style="display: flex; justify-content: center; margin-bottom: 20px; padding: 15px; background: white; border-radius: 15px; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);"></div>
+            <p style="color: var(--text-light); font-size: 0.9rem;">Scan with your phone to sync instantly!</p>
+            <button onclick="closeQR(null)" class="neu-btn" style="margin-top: 20px;">Close</button>
+        </div>
+    </div>
+
     <div class="container">
         <div id="auth-screen" class="neu-card" style="text-align: center; padding-top: 50px; padding-bottom: 50px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
             <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
@@ -503,12 +518,16 @@
         </div>
 
         <div id="app-screen" class="hidden" style="flex-grow: 1;">
+            
             <div class="nav-pill">
                 <button onclick="showView('add')" id="nav-add" class="nav-item active">
                     <i class="fas fa-plus"></i> Add
                 </button>
                 <button onclick="showView('list')" id="nav-list" class="nav-item">
                     <i class="fas fa-search"></i> Find
+                </button>
+                <button onclick="showView('more')" id="nav-more" class="nav-item">
+                    <i class="fas fa-bars"></i> More
                 </button>
             </div>
 
@@ -539,12 +558,32 @@
                 </div>
                 <div id="inventory-list"></div>
             </div>
-            
-            <div id="logout-btn" class="logout-text">Sign Out</div>
-            
-            <div class="footer" style="margin-top: 30px;">
-                &lt;/&gt; with 💭 by Spandan.
+
+            <div id="view-more" class="hidden">
+                <div class="neu-card" style="text-align: center; padding-top: 40px; padding-bottom: 40px;">
+                    <lottie-player src="https://lottie.host/93388713-7d72-4638-b769-6d60c5c36195/lYn6E7k4e0.json" background="transparent" speed="1" style="width: 150px; height: 150px; margin: 0 auto 20px auto;" loop autoplay></lottie-player>
+                    <h2 id="settings-name">Settings</h2>
+                    <p style="color: var(--text-light); margin-bottom: 30px;">Manage your Knack experience</p>
+
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        
+                        <div id="desktop-share-btn" class="hidden">
+                            <button onclick="showQR()" class="neu-btn" style="color: var(--text-main);">
+                                <i class="fas fa-mobile-alt"></i> Send Knack to Phone
+                            </button>
+                        </div>
+
+                        <button id="logout-btn" class="neu-btn logout-btn-style">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="footer" style="margin-top: 30px;">
+                    &lt;/&gt; with 💭 by Spandan.
+                </div>
             </div>
+
         </div>
     </div>
 
@@ -600,13 +639,13 @@
         logoutBtn.addEventListener('click', () => {
             if (!logoutConfirmation) {
                 logoutConfirmation = true;
-                logoutBtn.innerText = "Really?";
+                logoutBtn.innerHTML = `<i class="fas fa-exclamation-circle"></i> Really?`;
                 logoutBtn.classList.add('confirming');
                 
                 setTimeout(() => {
                     if (currentUser && logoutConfirmation) {
                         logoutConfirmation = false;
-                        logoutBtn.innerText = "Sign Out";
+                        logoutBtn.innerHTML = `<i class="fas fa-sign-out-alt"></i> Sign Out`;
                         logoutBtn.classList.remove('confirming');
                     }
                 }, 3000);
@@ -620,6 +659,10 @@
                 currentUser = user;
                 authScreen.classList.add('hidden');
                 backgroundBlobs.classList.add('app-active');
+                
+                // Update Name in Settings
+                const fName = user.displayName ? user.displayName.split(' ')[0] : 'User';
+                document.getElementById('settings-name').innerText = fName;
 
                 const userDocRef = doc(db, "users", user.uid);
                 const userSnap = await getDoc(userDocRef);
@@ -630,6 +673,9 @@
                 } else {
                     runWelcomeSequence(user);
                 }
+                
+                // Check if Desktop for QR Feature
+                checkDeviceType();
 
             } else {
                 currentUser = null;
@@ -641,10 +687,46 @@
                 if(inventoryUnsub) inventoryUnsub();
 
                 logoutConfirmation = false;
-                logoutBtn.innerText = "Sign Out";
+                logoutBtn.innerHTML = `<i class="fas fa-sign-out-alt"></i> Sign Out`;
                 logoutBtn.classList.remove('confirming');
+                
+                // Reset View
+                showView('add');
             }
         });
+
+        function checkDeviceType() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (!isMobile) {
+                document.getElementById('desktop-share-btn').classList.remove('hidden');
+            }
+        }
+
+        // --- QR CODE FUNCTIONALITY ---
+        window.showQR = () => {
+            const qrOverlay = document.getElementById('qr-overlay');
+            const target = document.getElementById('qr-code-target');
+            
+            // Clear previous
+            target.innerHTML = '';
+            
+            // Generate QR
+            new QRCode(target, {
+                text: window.location.href,
+                width: 150,
+                height: 150,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+            
+            qrOverlay.classList.remove('hidden');
+        };
+
+        window.closeQR = (e) => {
+            if(e && e.target !== e.currentTarget) return; // Only close if clicking background or button
+            document.getElementById('qr-overlay').classList.add('hidden');
+        }
 
         // --- ONBOARDING LOGIC ---
         nextSlideBtn.addEventListener('click', async () => {
@@ -932,8 +1014,12 @@
         window.showView = (viewName) => {
             document.getElementById('view-add').classList.add('hidden');
             document.getElementById('view-list').classList.add('hidden');
+            document.getElementById('view-more').classList.add('hidden');
+            
             document.getElementById('nav-add').classList.remove('active');
             document.getElementById('nav-list').classList.remove('active');
+            document.getElementById('nav-more').classList.remove('active');
+            
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
             document.getElementById(`nav-${viewName}`).classList.add('active');
             document.querySelectorAll('.item-menu-dropdown').forEach(el => el.classList.add('hidden'));
