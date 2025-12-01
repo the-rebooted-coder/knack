@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inventory Neumorph</title>
+    <style>
+        :root {
+            --bg: #e0e5ec;
+            --text: #4a4a4a;
+            --highlight: #2196f3;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        /* Typography */
+        h1, h2, h3 { font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
+        p { font-weight: 500; opacity: 0.8; }
+        
+        /* Neumorphic Base Classes */
+        .neu-card {
+            background: var(--bg);
+            border-radius: 20px;
+            box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .neu-input {
+            width: 100%;
+            border: none;
+            background: var(--bg);
+            border-radius: 12px;
+            box-shadow: inset 6px 6px 10px var(--shadow-dark), inset -6px -6px 10px var(--shadow-light);
+            padding: 15px;
+            box-sizing: border-box;
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--text);
+            font-weight: 600;
+            outline: none;
+        }
+
+        .neu-btn {
+            border: none;
+            background: var(--bg);
+            border-radius: 12px;
+            box-shadow: 6px 6px 10px var(--shadow-dark), -6px -6px 10px var(--shadow-light);
+            color: var(--highlight);
+            font-weight: 900;
+            padding: 15px 30px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .neu-btn:active {
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+        }
+
+        .hidden { display: none !important; }
+
+        /* Item List Styles */
+        .item-card {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .item-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: cover;
+            margin-right: 15px;
+            background: #ccc;
+        }
+
+        .item-details h3 { margin: 0; font-size: 1.1rem; }
+        .location-tag {
+            font-size: 0.8rem;
+            color: var(--highlight);
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        /* Navbar */
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .nav button { width: 48%; }
+        .nav button.active { color: var(--text); box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="auth-screen" class="neu-card" style="text-align: center; margin-top: 30vh;">
+            <h1>MY INVENTORY</h1>
+            <p>Organize your world.</p>
+            <button id="login-btn" class="neu-btn">Sign in with Google</button>
+        </div>
+
+        <div id="app-screen" class="hidden">
+            <div class="nav">
+                <button onclick="showView('add')" id="nav-add" class="neu-btn active">Add</button>
+                <button onclick="showView('list')" id="nav-list" class="neu-btn">Find</button>
+            </div>
+
+            <div id="view-add">
+                <div class="neu-card">
+                    <h2>New Item</h2>
+                    <input type="text" id="inp-name" class="neu-input" placeholder="Item Name (Required)">
+                    <input type="text" id="inp-loc" class="neu-input" placeholder="Shelf/Location (Required)">
+                    <textarea id="inp-desc" class="neu-input" placeholder="Description (Optional)" rows="3"></textarea>
+                    
+                    <p style="font-weight:700; font-size: 0.9rem;">Image (Optional)</p>
+                    <input type="file" id="inp-file" accept="image/*" class="neu-input" style="padding: 10px;">
+                    
+                    <button id="save-btn" class="neu-btn">Store Item</button>
+                </div>
+            </div>
+
+            <div id="view-list" class="hidden">
+                <div class="neu-card">
+                    <input type="text" id="search-bar" class="neu-input" placeholder="Search items...">
+                </div>
+                <div id="inventory-list">
+                    </div>
+            </div>
+            
+            <button id="logout-btn" class="neu-btn" style="margin-top: 30px; color: #ff4d4d;">Logout</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // --------------------------------------------------------------
+        // 1. PASTE YOUR CONFIG HERE
+        // --------------------------------------------------------------
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "SENDER_ID",
+            appId: "APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUser = null;
+        let inventoryUnsub = null;
+
+        // Auth Logic
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const authScreen = document.getElementById('auth-screen');
+        const appScreen = document.getElementById('app-screen');
+
+        loginBtn.addEventListener('click', () => signInWithPopup(auth, provider));
+        logoutBtn.addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                authScreen.classList.add('hidden');
+                appScreen.classList.remove('hidden');
+                loadInventory();
+            } else {
+                currentUser = null;
+                authScreen.classList.remove('hidden');
+                appScreen.classList.add('hidden');
+                if(inventoryUnsub) inventoryUnsub(); // Stop listening
+            }
+        });
+
+        // Add Item Logic
+        const saveBtn = document.getElementById('save-btn');
+        const fileInput = document.getElementById('inp-file');
+
+        saveBtn.addEventListener('click', async () => {
+            const name = document.getElementById('inp-name').value;
+            const loc = document.getElementById('inp-loc').value;
+            const desc = document.getElementById('inp-desc').value;
+            
+            if (!name || !loc) return alert("Name and Location are required!");
+            
+            saveBtn.innerText = "Saving...";
+            
+            // Handle Image (Convert to Base64 for simplicity in this demo)
+            let imageBase64 = null;
+            if (fileInput.files[0]) {
+                imageBase64 = await toBase64(fileInput.files[0]);
+            }
+
+            try {
+                await addDoc(collection(db, "users", currentUser.uid, "items"), {
+                    name: name,
+                    name_lower: name.toLowerCase(), // For easier searching
+                    location: loc,
+                    description: desc,
+                    image: imageBase64,
+                    createdAt: serverTimestamp()
+                });
+                
+                // Reset Form
+                document.getElementById('inp-name').value = '';
+                document.getElementById('inp-loc').value = '';
+                document.getElementById('inp-desc').value = '';
+                fileInput.value = '';
+                alert("Stored!");
+            } catch (e) {
+                console.error(e);
+                alert("Error saving item.");
+            }
+            saveBtn.innerText = "Store Item";
+        });
+
+        // View/Search Logic
+        const listContainer = document.getElementById('inventory-list');
+        const searchBar = document.getElementById('search-bar');
+        let allItems = [];
+
+        function loadInventory() {
+            const q = query(collection(db, "users", currentUser.uid, "items"), orderBy("createdAt", "desc"));
+            
+            inventoryUnsub = onSnapshot(q, (snapshot) => {
+                allItems = [];
+                snapshot.forEach(doc => allItems.push({id: doc.id, ...doc.data()}));
+                renderList(allItems);
+            });
+        }
+
+        function renderList(items) {
+            listContainer.innerHTML = '';
+            if (items.length === 0) {
+                listContainer.innerHTML = '<p style="text-align:center">Nothing in inventory yet.</p>';
+                return;
+            }
+
+            items.forEach(item => {
+                const imgHTML = item.image 
+                    ? `<img src="${item.image}" class="item-img" class="neu-card">` 
+                    : `<div class="item-img neu-btn" style="display:flex;align-items:center;justify-content:center;font-size:20px;">📦</div>`;
+
+                const html = `
+                <div class="neu-card item-card">
+                    ${imgHTML}
+                    <div class="item-details">
+                        <h3>${item.name}</h3>
+                        <div class="location-tag">📍 ${item.location}</div>
+                        <p style="font-size:0.8rem; margin: 5px 0 0 0;">${item.description || ''}</p>
+                    </div>
+                </div>`;
+                listContainer.innerHTML += html;
+            });
+        }
+
+        searchBar.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allItems.filter(item => 
+                item.name_lower.includes(term) || item.location.toLowerCase().includes(term)
+            );
+            renderList(filtered);
+        });
+
+        // Utility: File to Base64
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+
+        // UI View Switcher
+        window.showView = (viewName) => {
+            document.getElementById('view-add').classList.add('hidden');
+            document.getElementById('view-list').classList.add('hidden');
+            document.getElementById('nav-add').classList.remove('active');
+            document.getElementById('nav-list').classList.remove('active');
+
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+            document.getElementById(`nav-${viewName}`).classList.add('active');
+        }
+    </script>
+</body>
+</html>
