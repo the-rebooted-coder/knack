@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My Stuff</title>
+    <title>Knack</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -12,10 +12,9 @@
             --bg: #ecf0f3;
             --text-main: #44476a;
             --text-light: #8993b0;
-            --primary: #6c5ce7; /* Pastel Purple */
-            --accent: #00b894;  /* Pastel Green */
+            --primary: #6c5ce7; 
+            --accent: #00b894;
             
-            /* Neumorph Shadows */
             --shadow-light: #ffffff;
             --shadow-dark: #d1d9e6;
         }
@@ -35,7 +34,7 @@
             position: relative;
         }
 
-        /* --- Ambient Background Blobs --- */
+        /* --- Ambient Background --- */
         .blob-cont {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100vh;
@@ -66,16 +65,27 @@
             z-index: 10;
         }
 
-        h1 { font-weight: 900; font-size: 2.2rem; margin: 0; color: var(--text-main); }
-        h2 { font-weight: 800; font-size: 1.5rem; margin-bottom: 15px; }
-        p { font-weight: 600; color: var(--text-light); }
+        /* --- Welcome Splash Overlay --- */
+        #welcome-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(236, 240, 243, 0.95);
+            backdrop-filter: blur(15px);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: opacity 0.5s ease;
+        }
+        .welcome-content h1 { font-size: 2.5rem; color: var(--primary); margin: 0; }
+        .welcome-content p { font-size: 1.2rem; color: var(--text-main); font-weight: 700; margin-top: 10px;}
 
         /* --- Components --- */
-        
-        /* The Outer Card Look */
         .neu-card {
             border-radius: 30px;
-            background: rgba(236, 240, 243, 0.6); /* Slight transparency for glass effect */
+            background: rgba(236, 240, 243, 0.6);
             backdrop-filter: blur(10px);
             box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
             padding: 30px;
@@ -83,7 +93,6 @@
             border: 1px solid rgba(255,255,255,0.4);
         }
 
-        /* The Deep Input Look */
         .neu-input {
             width: 100%;
             border: none;
@@ -103,7 +112,6 @@
             box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light), 0 0 5px rgba(108, 92, 231, 0.2);
         }
 
-        /* The Pop Button Look */
         .neu-btn {
             border: none;
             background: var(--bg);
@@ -129,103 +137,54 @@
             color: var(--accent);
         }
 
-        /* Custom File Upload */
-        .file-upload-wrapper {
-            position: relative;
-            margin-bottom: 20px;
-        }
+        /* File Upload */
+        .file-upload-wrapper { position: relative; margin-bottom: 20px; }
         .file-upload-label {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 30px;
-            border-radius: 20px;
-            background: var(--bg);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 30px; border-radius: 20px; background: var(--bg);
             box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
-            color: var(--text-light);
-            font-weight: 700;
-            cursor: pointer;
-            transition: color 0.3s;
+            color: var(--text-light); font-weight: 700; cursor: pointer;
         }
         .file-upload-label i { font-size: 2rem; margin-bottom: 10px; }
-        .file-upload-label:hover { color: var(--primary); }
         input[type="file"] { display: none; }
 
-        /* --- Navbar --- */
+        /* Navbar */
         .nav-pill {
-            display: flex;
-            background: var(--bg);
-            padding: 5px;
-            border-radius: 20px;
+            display: flex; background: var(--bg); padding: 5px; border-radius: 20px;
             box-shadow: 6px 6px 10px var(--shadow-dark), -6px -6px 10px var(--shadow-light);
             margin-bottom: 30px;
         }
         .nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 12px;
-            border-radius: 15px;
-            font-weight: 800;
-            color: var(--text-light);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            background: transparent;
+            flex: 1; text-align: center; padding: 12px; border-radius: 15px;
+            font-weight: 800; color: var(--text-light); cursor: pointer; border: none; background: transparent;
         }
         .nav-item.active {
-            background: var(--bg);
-            color: var(--primary);
+            background: var(--bg); color: var(--primary);
             box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
         }
 
-        /* --- List Items --- */
+        /* List Items */
         .item-card {
-            display: flex;
-            align-items: center;
-            background: var(--bg);
-            border-radius: 20px;
-            padding: 15px;
-            margin-bottom: 20px;
+            display: flex; align-items: center; background: var(--bg);
+            border-radius: 20px; padding: 15px; margin-bottom: 20px;
             box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-            transition: transform 0.2s;
         }
-        .item-card:hover { transform: translateY(-3px); }
-
         .item-img-box {
-            width: 70px;
-            height: 70px;
-            border-radius: 15px;
-            margin-right: 20px;
-            flex-shrink: 0;
-            /* Inset look for image holder */
-            background: var(--bg);
-            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 70px; height: 70px; border-radius: 15px; margin-right: 20px; flex-shrink: 0;
+            background: var(--bg); box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
         .item-img { width: 100%; height: 100%; object-fit: cover; }
         .item-icon { font-size: 30px; opacity: 0.3; }
-
         .item-info h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--text-main); }
         .tag-loc {
-            display: inline-block;
-            font-size: 0.75rem;
-            background: var(--bg);
-            padding: 4px 10px;
-            border-radius: 10px;
+            display: inline-block; font-size: 0.75rem; background: var(--bg);
+            padding: 4px 10px; border-radius: 10px; color: var(--primary); font-weight: 800;
             box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
-            color: var(--primary);
-            font-weight: 800;
-            margin-bottom: 5px;
         }
-        .item-desc { font-size: 0.85rem; color: var(--text-light); margin: 0; }
+        .item-desc { font-size: 0.85rem; color: var(--text-light); margin: 5px 0 0 0; }
 
         .hidden { display: none !important; }
-        
-        /* Floating Action Button (Optional style for Add, but we use nav) */
         .logout-text { color: #ff7675; font-size: 0.8rem; font-weight: 700; margin-top: 30px; display: block; text-align: center; cursor: pointer; }
 
     </style>
@@ -238,12 +197,19 @@
         <div class="blob blob-3"></div>
     </div>
 
+    <div id="welcome-overlay" class="hidden">
+        <div class="welcome-content">
+            <h1>Knack</h1>
+            <p id="welcome-msg">Hello...</p>
+        </div>
+    </div>
+
     <div class="container">
         
         <div id="auth-screen" class="neu-card" style="text-align: center; padding-top: 50px; padding-bottom: 50px;">
-            <div style="font-size: 60px; margin-bottom: 20px;">📦</div>
-            <h1>MY STUFF</h1>
-            <p style="margin-bottom: 40px;">Keep track of your world.</p>
+            <div style="font-size: 60px; margin-bottom: 20px;">⚡</div>
+            <h1 style="margin:0;">Knack</h1>
+            <p style="margin-bottom: 40px; margin-top:5px;">Organize your life.</p>
             <button id="login-btn" class="neu-btn">
                 <i class="fab fa-google"></i> Continue with Google
             </button>
@@ -253,40 +219,39 @@
             
             <div class="nav-pill">
                 <button onclick="showView('add')" id="nav-add" class="nav-item active">
-                    <i class="fas fa-plus"></i> Add New
+                    <i class="fas fa-plus"></i> Add
                 </button>
                 <button onclick="showView('list')" id="nav-list" class="nav-item">
-                    <i class="fas fa-search"></i> Find Item
+                    <i class="fas fa-search"></i> Find
                 </button>
             </div>
 
             <div id="view-add">
                 <div class="neu-card">
-                    <h2>Stash it.</h2>
-                    <input type="text" id="inp-name" class="neu-input" placeholder="What is it?">
-                    <input type="text" id="inp-loc" class="neu-input" placeholder="Where is it?">
-                    <textarea id="inp-desc" class="neu-input" placeholder="Any notes?" rows="3"></textarea>
+                    <h2>Stash Item</h2>
+                    <input type="text" id="inp-name" class="neu-input" placeholder="Name">
+                    <input type="text" id="inp-loc" class="neu-input" placeholder="Location / Shelf">
+                    <textarea id="inp-desc" class="neu-input" placeholder="Description" rows="3"></textarea>
                     
                     <div class="file-upload-wrapper">
                         <label for="inp-file" class="file-upload-label" id="file-label">
                             <i class="fas fa-camera"></i>
-                            <span>Tap to add photo</span>
+                            <span>Add Photo</span>
                         </label>
                         <input type="file" id="inp-file" accept="image/*">
                     </div>
                     
                     <button id="save-btn" class="neu-btn">
-                        <i class="fas fa-check"></i> Save to Inventory
+                        <i class="fas fa-check"></i> Save
                     </button>
                 </div>
             </div>
 
             <div id="view-list" class="hidden">
                 <div style="margin-bottom: 25px;">
-                    <input type="text" id="search-bar" class="neu-input" placeholder="🔍 Search your stuff...">
+                    <input type="text" id="search-bar" class="neu-input" placeholder="🔍 Search...">
                 </div>
-                <div id="inventory-list">
-                    </div>
+                <div id="inventory-list"></div>
             </div>
             
             <div id="logout-btn" class="logout-text">Sign Out</div>
@@ -316,55 +281,87 @@
         let currentUser = null;
         let inventoryUnsub = null;
 
-        // --- DOM Elements ---
+        // UI Refs
         const loginBtn = document.getElementById('login-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const authScreen = document.getElementById('auth-screen');
         const appScreen = document.getElementById('app-screen');
-        const fileInput = document.getElementById('inp-file');
-        const fileLabel = document.getElementById('file-label');
+        const welcomeOverlay = document.getElementById('welcome-overlay');
+        const welcomeMsg = document.getElementById('welcome-msg');
+        
+        // Random Greetings List
+        const greetings = [
+            "Welcome back,",
+            "Good to see you,",
+            "Ready to organize,",
+            "Hi there,",
+            "Let's get sorted,",
+            "Hello,"
+        ];
 
-        // --- Auth Listeners ---
+        // Auth
         loginBtn.addEventListener('click', () => signInWithPopup(auth, provider));
         logoutBtn.addEventListener('click', () => signOut(auth));
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
+                
+                // 1. Prepare Welcome Screen
+                const firstName = user.displayName ? user.displayName.split(' ')[0] : 'Friend';
+                const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+                welcomeMsg.innerHTML = `${randomGreeting}<br><span style="color:var(--text-main); font-weight:900; font-size:1.5rem;">${firstName}</span>`;
+                
+                // 2. Hide Login, Show Welcome
                 authScreen.classList.add('hidden');
-                appScreen.classList.remove('hidden');
+                welcomeOverlay.classList.remove('hidden');
+                
+                // 3. Load Data immediately in background
                 loadInventory();
+
+                // 4. Wait 2 seconds, then show App
+                setTimeout(() => {
+                    welcomeOverlay.style.opacity = '0'; // Fade out effect
+                    setTimeout(() => {
+                        welcomeOverlay.classList.add('hidden');
+                        welcomeOverlay.style.opacity = '1'; // Reset for next time
+                        appScreen.classList.remove('hidden');
+                    }, 500); // Wait for fade out to finish
+                }, 2000);
+
             } else {
                 currentUser = null;
                 authScreen.classList.remove('hidden');
                 appScreen.classList.add('hidden');
+                welcomeOverlay.classList.add('hidden'); // Ensure hidden on logout
                 if(inventoryUnsub) inventoryUnsub();
             }
         });
 
-        // --- File Input UI Feedback ---
+        // Add Item
+        const saveBtn = document.getElementById('save-btn');
+        const fileInput = document.getElementById('inp-file');
+        const fileLabel = document.getElementById('file-label');
+
         fileInput.addEventListener('change', () => {
             if(fileInput.files.length > 0) {
                 fileLabel.innerHTML = `<i class="fas fa-check-circle" style="color:var(--accent)"></i><span>Image Selected</span>`;
             }
         });
 
-        // --- Save Logic ---
-        const saveBtn = document.getElementById('save-btn');
         saveBtn.addEventListener('click', async () => {
             const name = document.getElementById('inp-name').value;
             const loc = document.getElementById('inp-loc').value;
             const desc = document.getElementById('inp-desc').value;
             
-            if (!name || !loc) return alert("Please enter at least a Name and Location");
+            if (!name || !loc) return alert("Name and Location required");
             
             const originalText = saveBtn.innerHTML;
             saveBtn.innerHTML = "Saving...";
             
             let imageBase64 = null;
             if (fileInput.files[0]) {
-                try { imageBase64 = await toBase64(fileInput.files[0]); } 
-                catch(e) { console.error(e); }
+                try { imageBase64 = await toBase64(fileInput.files[0]); } catch(e){}
             }
 
             try {
@@ -377,15 +374,13 @@
                     createdAt: serverTimestamp()
                 });
                 
-                // Reset UI
+                // Reset
                 document.getElementById('inp-name').value = '';
                 document.getElementById('inp-loc').value = '';
                 document.getElementById('inp-desc').value = '';
                 fileInput.value = '';
-                fileLabel.innerHTML = `<i class="fas fa-camera"></i><span>Tap to add photo</span>`;
-                
-                // Optional: Switch to list view automatically
-                // window.showView('list'); 
+                fileLabel.innerHTML = `<i class="fas fa-camera"></i><span>Add Photo</span>`;
+                // window.showView('list'); // Optional auto-switch
                 
             } catch (e) {
                 alert("Error: " + e.message);
@@ -393,14 +388,13 @@
             saveBtn.innerHTML = originalText;
         });
 
-        // --- Load Logic ---
+        // List
         const listContainer = document.getElementById('inventory-list');
         const searchBar = document.getElementById('search-bar');
         let allItems = [];
 
         function loadInventory() {
             const q = query(collection(db, "users", currentUser.uid, "items"), orderBy("createdAt", "desc"));
-            
             inventoryUnsub = onSnapshot(q, (snapshot) => {
                 allItems = [];
                 snapshot.forEach(doc => allItems.push({id: doc.id, ...doc.data()}));
@@ -426,9 +420,7 @@
 
                 const html = `
                 <div class="item-card">
-                    <div class="item-img-box">
-                        ${imgHTML}
-                    </div>
+                    <div class="item-img-box">${imgHTML}</div>
                     <div class="item-info">
                         <h3>${item.name}</h3>
                         <div class="tag-loc"><i class="fas fa-map-marker-alt"></i> ${item.location}</div>
@@ -454,13 +446,11 @@
             reader.onerror = error => reject(error);
         });
 
-        // --- View Switcher ---
         window.showView = (viewName) => {
             document.getElementById('view-add').classList.add('hidden');
             document.getElementById('view-list').classList.add('hidden');
             document.getElementById('nav-add').classList.remove('active');
             document.getElementById('nav-list').classList.remove('active');
-
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
             document.getElementById(`nav-${viewName}`).classList.add('active');
         }
