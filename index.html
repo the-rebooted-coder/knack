@@ -86,7 +86,7 @@
         .welcome-content h1 { font-size: 2.5rem; color: var(--primary); margin: 0; }
         .welcome-content p { font-size: 1.2rem; color: var(--text-main); font-weight: 700; margin-top: 10px;}
 
-        /* --- ONBOARDING OVERLAY (New) --- */
+        /* --- ONBOARDING OVERLAY (FIXED) --- */
         #onboarding-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -100,8 +100,9 @@
 
         .slider-container {
             width: 100%;
+            max-width: 450px; /* Constrain width */
             flex-grow: 1;
-            overflow: hidden;
+            overflow: hidden; /* Hides the other cards */
             position: relative;
             display: flex;
             align-items: center;
@@ -109,28 +110,30 @@
 
         .slider-track {
             display: flex;
-            width: 400%; /* 4 Slides */
-            height: 100%;
+            height: auto;
+            /* WIDTH FIX: Don't set width here, let flex handle it */
             transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            width: 100%;
         }
 
         .slide {
-            width: 25%; /* 100% / 4 */
-            height: 100%;
+            min-width: 100%; /* FIX: Force each slide to take full container width */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px;
+            padding: 20px;
             text-align: center;
+            flex-shrink: 0; /* FIX: Prevent slides from squishing */
         }
 
-        .slide-icon { font-size: 80px; margin-bottom: 30px; filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.1)); }
-        .slide h2 { font-size: 2rem; color: var(--primary); margin-bottom: 15px; font-weight: 900; }
-        .slide p { font-size: 1.1rem; color: var(--text-light); line-height: 1.5; font-weight: 600; }
+        .slide-icon { font-size: 60px; margin-bottom: 20px; }
+        .slide h2 { font-size: 1.8rem; color: var(--primary); margin-bottom: 10px; font-weight: 900; }
+        .slide p { font-size: 1rem; color: var(--text-light); line-height: 1.5; font-weight: 600; margin-bottom: 0; }
 
         .onboarding-controls {
             width: 100%;
+            max-width: 450px;
             padding: 30px;
             display: flex;
             flex-direction: column;
@@ -253,24 +256,32 @@
         <div class="slider-container">
             <div class="slider-track" id="slider-track">
                 <div class="slide">
-                    <div class="slide-icon">👋</div>
-                    <h2>Welcome to Knack</h2>
-                    <p>Lose your knack of<br>losing things.</p>
+                    <div class="neu-card" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <div class="slide-icon">👋</div>
+                        <h2>Welcome to Knack</h2>
+                        <p>Lose your knack of<br>losing things.</p>
+                    </div>
                 </div>
                 <div class="slide">
-                    <div class="slide-icon">☁️</div>
-                    <h2>Sync Everything</h2>
-                    <p>All your items,<br>synced across your devices.</p>
+                    <div class="neu-card" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <div class="slide-icon">☁️</div>
+                        <h2>Sync Everything</h2>
+                        <p>All your items,<br>synced across your devices.</p>
+                    </div>
                 </div>
                 <div class="slide">
-                    <div class="slide-icon">🔒</div>
-                    <h2>Private & Safe</h2>
-                    <p>All data stored privately<br>on Firebase, encrypted.</p>
+                    <div class="neu-card" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <div class="slide-icon">🔒</div>
+                        <h2>Private & Safe</h2>
+                        <p>All data stored privately<br>on Firebase, encrypted.</p>
+                    </div>
                 </div>
                 <div class="slide">
-                    <div class="slide-icon">🎉</div>
-                    <h2>You are ready</h2>
-                    <p>Have fun<br>losing things!</p>
+                    <div class="neu-card" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <div class="slide-icon">🎉</div>
+                        <h2>You are ready</h2>
+                        <p>Have fun<br>losing things!</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -367,7 +378,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        // Added getDoc and setDoc for onboarding Logic
         import { getFirestore, collection, addDoc, doc, deleteDoc, updateDoc, getDoc, setDoc, query, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -415,16 +425,13 @@
                 currentUser = user;
                 authScreen.classList.add('hidden');
                 
-                // --- ONBOARDING CHECK ---
                 const userDocRef = doc(db, "users", user.uid);
                 const userSnap = await getDoc(userDocRef);
 
                 if (!userSnap.exists() || !userSnap.data().onboarded) {
-                    // New User: Show Onboarding
                     onboardingOverlay.classList.remove('hidden');
-                    loadInventory(); // Load data in bg
+                    loadInventory(); 
                 } else {
-                    // Existing User: Show Splash
                     runWelcomeSequence(user);
                 }
 
@@ -438,23 +445,20 @@
             }
         });
 
-        // --- ONBOARDING LOGIC ---
+        // --- ONBOARDING LOGIC FIXED ---
         nextSlideBtn.addEventListener('click', async () => {
             if (currentSlide < 3) {
                 currentSlide++;
                 updateSlider();
             } else {
-                // Finish Onboarding
                 nextSlideBtn.innerHTML = "Starting...";
-                // Mark user as onboarded in DB
                 try {
                     await setDoc(doc(db, "users", currentUser.uid), { onboarded: true }, { merge: true });
                     
-                    // Fade out onboarding, run splash
                     onboardingOverlay.style.opacity = '0';
                     setTimeout(() => {
                         onboardingOverlay.classList.add('hidden');
-                        onboardingOverlay.style.opacity = '1'; // Reset
+                        onboardingOverlay.style.opacity = '1';
                         runWelcomeSequence(currentUser);
                     }, 500);
                 } catch (e) {
@@ -464,7 +468,8 @@
         });
 
         function updateSlider() {
-            sliderTrack.style.transform = `translateX(-${currentSlide * 25}%)`;
+            // MOVEMENT FIX: Move by 100% per slide since slides are min-width: 100%
+            sliderTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
             dots.forEach((dot, index) => {
                 dot.classList.toggle('active', index === currentSlide);
             });
@@ -476,7 +481,7 @@
 
         // --- WELCOME SEQUENCE ---
         function runWelcomeSequence(user) {
-            loadInventory(); // Ensure data loads
+            loadInventory(); 
             
             const firstName = user.displayName ? user.displayName.split(' ')[0] : 'Friend';
             const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
@@ -495,8 +500,6 @@
         }
 
         // --- INVENTORY LOGIC ---
-
-        // Add Item
         const saveBtn = document.getElementById('save-btn');
         const fileInput = document.getElementById('inp-file');
         const fileLabel = document.getElementById('file-label');
@@ -532,7 +535,6 @@
                     createdAt: serverTimestamp()
                 });
                 
-                // Reset
                 document.getElementById('inp-name').value = '';
                 document.getElementById('inp-loc').value = '';
                 document.getElementById('inp-desc').value = '';
@@ -545,7 +547,6 @@
             saveBtn.innerHTML = originalText;
         });
 
-        // List
         const listContainer = document.getElementById('inventory-list');
         const searchBar = document.getElementById('search-bar');
 
@@ -603,7 +604,6 @@
             renderList(filtered);
         });
 
-        // --- UTILS ---
         window.toggleMenu = (id) => {
             document.querySelectorAll('.item-menu-dropdown').forEach(el => {
                 if (el.id !== `menu-${id}`) el.classList.add('hidden');
@@ -624,11 +624,9 @@
         window.prepEdit = (id) => {
             const item = allItems.find(i => i.id === id);
             if (!item) return;
-            
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-name').value = item.name;
             document.getElementById('edit-loc').value = item.location;
-            
             document.getElementById('edit-modal').classList.remove('hidden');
             document.getElementById(`menu-${id}`).classList.add('hidden');
         };
