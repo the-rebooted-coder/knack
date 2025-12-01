@@ -3,187 +3,328 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Inventory Neumorph</title>
+    <title>My Stuff</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --bg: #e0e5ec;
-            --text: #4a4a4a;
-            --highlight: #2196f3;
+            --bg: #ecf0f3;
+            --text-main: #44476a;
+            --text-light: #8993b0;
+            --primary: #6c5ce7; /* Pastel Purple */
+            --accent: #00b894;  /* Pastel Green */
+            
+            /* Neumorph Shadows */
             --shadow-light: #ffffff;
-            --shadow-dark: #a3b1c6;
+            --shadow-dark: #d1d9e6;
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-main);
+            font-family: 'Nunito', sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             display: flex;
             justify-content: center;
             min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
         }
 
+        /* --- Ambient Background Blobs --- */
+        .blob-cont {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.6;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+        .blob-1 { background: #ff7675; width: 300px; height: 300px; top: -50px; left: -100px; }
+        .blob-2 { background: #74b9ff; width: 250px; height: 250px; bottom: 50px; right: -50px; animation-delay: 2s; }
+        .blob-3 { background: #a29bfe; width: 200px; height: 200px; top: 40%; left: 40%; animation-delay: 4s; opacity: 0.4; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(20px, 40px) scale(1.1); }
+        }
+
+        /* --- Layout --- */
         .container {
             width: 100%;
-            max-width: 480px;
+            max-width: 450px;
+            padding: 30px 20px;
+            z-index: 10;
         }
 
-        /* Typography */
-        h1, h2, h3 { font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
-        p { font-weight: 500; opacity: 0.8; }
+        h1 { font-weight: 900; font-size: 2.2rem; margin: 0; color: var(--text-main); }
+        h2 { font-weight: 800; font-size: 1.5rem; margin-bottom: 15px; }
+        p { font-weight: 600; color: var(--text-light); }
+
+        /* --- Components --- */
         
-        /* Neumorphic Base Classes */
+        /* The Outer Card Look */
         .neu-card {
-            background: var(--bg);
-            border-radius: 20px;
-            box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
-            padding: 25px;
-            margin-bottom: 25px;
+            border-radius: 30px;
+            background: rgba(236, 240, 243, 0.6); /* Slight transparency for glass effect */
+            backdrop-filter: blur(10px);
+            box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.4);
         }
 
+        /* The Deep Input Look */
         .neu-input {
             width: 100%;
             border: none;
             background: var(--bg);
-            border-radius: 12px;
-            box-shadow: inset 6px 6px 10px var(--shadow-dark), inset -6px -6px 10px var(--shadow-light);
-            padding: 15px;
-            box-sizing: border-box;
+            border-radius: 15px;
+            box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+            padding: 18px;
             font-size: 16px;
-            margin-bottom: 15px;
-            color: var(--text);
-            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
             outline: none;
+            transition: box-shadow 0.2s;
+        }
+        .neu-input:focus {
+            box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light), 0 0 5px rgba(108, 92, 231, 0.2);
         }
 
+        /* The Pop Button Look */
         .neu-btn {
             border: none;
             background: var(--bg);
-            border-radius: 12px;
+            border-radius: 15px;
             box-shadow: 6px 6px 10px var(--shadow-dark), -6px -6px 10px var(--shadow-light);
-            color: var(--highlight);
+            color: var(--primary);
             font-weight: 900;
-            padding: 15px 30px;
+            padding: 18px;
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: all 0.2s ease;
+            font-size: 0.9rem;
             width: 100%;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-
-        .neu-btn:active {
+        .neu-btn:active, .neu-btn.active {
             box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            transform: translateY(2px);
+            color: var(--accent);
         }
 
-        .hidden { display: none !important; }
+        /* Custom File Upload */
+        .file-upload-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .file-upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            border-radius: 20px;
+            background: var(--bg);
+            box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+            color: var(--text-light);
+            font-weight: 700;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .file-upload-label i { font-size: 2rem; margin-bottom: 10px; }
+        .file-upload-label:hover { color: var(--primary); }
+        input[type="file"] { display: none; }
 
-        /* Item List Styles */
+        /* --- Navbar --- */
+        .nav-pill {
+            display: flex;
+            background: var(--bg);
+            padding: 5px;
+            border-radius: 20px;
+            box-shadow: 6px 6px 10px var(--shadow-dark), -6px -6px 10px var(--shadow-light);
+            margin-bottom: 30px;
+        }
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border-radius: 15px;
+            font-weight: 800;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+        }
+        .nav-item.active {
+            background: var(--bg);
+            color: var(--primary);
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+        }
+
+        /* --- List Items --- */
         .item-card {
             display: flex;
             align-items: center;
+            background: var(--bg);
+            border-radius: 20px;
+            padding: 15px;
             margin-bottom: 20px;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+            transition: transform 0.2s;
         }
-        
-        .item-img {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            object-fit: cover;
-            margin-right: 15px;
-            background: #ccc;
-        }
+        .item-card:hover { transform: translateY(-3px); }
 
-        .item-details h3 { margin: 0; font-size: 1.1rem; }
-        .location-tag {
-            font-size: 0.8rem;
-            color: var(--highlight);
-            font-weight: 800;
-            text-transform: uppercase;
-        }
-
-        /* Navbar */
-        .nav {
+        .item-img-box {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            margin-right: 20px;
+            flex-shrink: 0;
+            /* Inset look for image holder */
+            background: var(--bg);
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            overflow: hidden;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
+            align-items: center;
+            justify-content: center;
         }
-        .nav button { width: 48%; }
-        .nav button.active { color: var(--text); box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
+        .item-img { width: 100%; height: 100%; object-fit: cover; }
+        .item-icon { font-size: 30px; opacity: 0.3; }
+
+        .item-info h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--text-main); }
+        .tag-loc {
+            display: inline-block;
+            font-size: 0.75rem;
+            background: var(--bg);
+            padding: 4px 10px;
+            border-radius: 10px;
+            box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+            color: var(--primary);
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        .item-desc { font-size: 0.85rem; color: var(--text-light); margin: 0; }
+
+        .hidden { display: none !important; }
+        
+        /* Floating Action Button (Optional style for Add, but we use nav) */
+        .logout-text { color: #ff7675; font-size: 0.8rem; font-weight: 700; margin-top: 30px; display: block; text-align: center; cursor: pointer; }
 
     </style>
 </head>
 <body>
 
+    <div class="blob-cont">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
     <div class="container">
-        <div id="auth-screen" class="neu-card" style="text-align: center; margin-top: 30vh;">
-            <h1>MY INVENTORY</h1>
-            <p>Organize your world.</p>
-            <button id="login-btn" class="neu-btn">Sign in with Google</button>
+        
+        <div id="auth-screen" class="neu-card" style="text-align: center; padding-top: 50px; padding-bottom: 50px;">
+            <div style="font-size: 60px; margin-bottom: 20px;">📦</div>
+            <h1>MY STUFF</h1>
+            <p style="margin-bottom: 40px;">Keep track of your world.</p>
+            <button id="login-btn" class="neu-btn">
+                <i class="fab fa-google"></i> Continue with Google
+            </button>
         </div>
 
         <div id="app-screen" class="hidden">
-            <div class="nav">
-                <button onclick="showView('add')" id="nav-add" class="neu-btn active">Add</button>
-                <button onclick="showView('list')" id="nav-list" class="neu-btn">Find</button>
+            
+            <div class="nav-pill">
+                <button onclick="showView('add')" id="nav-add" class="nav-item active">
+                    <i class="fas fa-plus"></i> Add New
+                </button>
+                <button onclick="showView('list')" id="nav-list" class="nav-item">
+                    <i class="fas fa-search"></i> Find Item
+                </button>
             </div>
 
             <div id="view-add">
                 <div class="neu-card">
-                    <h2>New Item</h2>
-                    <input type="text" id="inp-name" class="neu-input" placeholder="Item Name (Required)">
-                    <input type="text" id="inp-loc" class="neu-input" placeholder="Shelf/Location (Required)">
-                    <textarea id="inp-desc" class="neu-input" placeholder="Description (Optional)" rows="3"></textarea>
+                    <h2>Stash it.</h2>
+                    <input type="text" id="inp-name" class="neu-input" placeholder="What is it?">
+                    <input type="text" id="inp-loc" class="neu-input" placeholder="Where is it?">
+                    <textarea id="inp-desc" class="neu-input" placeholder="Any notes?" rows="3"></textarea>
                     
-                    <p style="font-weight:700; font-size: 0.9rem;">Image (Optional)</p>
-                    <input type="file" id="inp-file" accept="image/*" class="neu-input" style="padding: 10px;">
+                    <div class="file-upload-wrapper">
+                        <label for="inp-file" class="file-upload-label" id="file-label">
+                            <i class="fas fa-camera"></i>
+                            <span>Tap to add photo</span>
+                        </label>
+                        <input type="file" id="inp-file" accept="image/*">
+                    </div>
                     
-                    <button id="save-btn" class="neu-btn">Store Item</button>
+                    <button id="save-btn" class="neu-btn">
+                        <i class="fas fa-check"></i> Save to Inventory
+                    </button>
                 </div>
             </div>
 
             <div id="view-list" class="hidden">
-                <div class="neu-card">
-                    <input type="text" id="search-bar" class="neu-input" placeholder="Search items...">
+                <div style="margin-bottom: 25px;">
+                    <input type="text" id="search-bar" class="neu-input" placeholder="🔍 Search your stuff...">
                 </div>
                 <div id="inventory-list">
                     </div>
             </div>
             
-            <button id="logout-btn" class="neu-btn" style="margin-top: 30px; color: #ff4d4d;">Logout</button>
+            <div id="logout-btn" class="logout-text">Sign Out</div>
         </div>
     </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAWz3mkFz_sGAPIYynKglBJz3ub9113v9A",
-        authDomain: "knack-2ffba.firebaseapp.com",
-        projectId: "knack-2ffba",
-        storageBucket: "knack-2ffba.firebasestorage.app",
-        messagingSenderId: "683820138416",
-        appId: "1:683820138416:web:f051ad81092ca1730ee075",
-        measurementId: "G-BE7TKVTYPS"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyAWz3mkFz_sGAPIYynKglBJz3ub9113v9A",
+            authDomain: "knack-2ffba.firebaseapp.com",
+            projectId: "knack-2ffba",
+            storageBucket: "knack-2ffba.firebasestorage.app",
+            messagingSenderId: "683820138416",
+            appId: "1:683820138416:web:f051ad81092ca1730ee075",
+            measurementId: "G-BE7TKVTYPS"
+        };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
         let currentUser = null;
         let inventoryUnsub = null;
 
-        // Auth Logic
+        // --- DOM Elements ---
         const loginBtn = document.getElementById('login-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const authScreen = document.getElementById('auth-screen');
         const appScreen = document.getElementById('app-screen');
+        const fileInput = document.getElementById('inp-file');
+        const fileLabel = document.getElementById('file-label');
 
+        // --- Auth Listeners ---
         loginBtn.addEventListener('click', () => signInWithPopup(auth, provider));
         logoutBtn.addEventListener('click', () => signOut(auth));
 
@@ -197,53 +338,62 @@
                 currentUser = null;
                 authScreen.classList.remove('hidden');
                 appScreen.classList.add('hidden');
-                if(inventoryUnsub) inventoryUnsub(); // Stop listening
+                if(inventoryUnsub) inventoryUnsub();
             }
         });
 
-        // Add Item Logic
-        const saveBtn = document.getElementById('save-btn');
-        const fileInput = document.getElementById('inp-file');
+        // --- File Input UI Feedback ---
+        fileInput.addEventListener('change', () => {
+            if(fileInput.files.length > 0) {
+                fileLabel.innerHTML = `<i class="fas fa-check-circle" style="color:var(--accent)"></i><span>Image Selected</span>`;
+            }
+        });
 
+        // --- Save Logic ---
+        const saveBtn = document.getElementById('save-btn');
         saveBtn.addEventListener('click', async () => {
             const name = document.getElementById('inp-name').value;
             const loc = document.getElementById('inp-loc').value;
             const desc = document.getElementById('inp-desc').value;
             
-            if (!name || !loc) return alert("Name and Location are required!");
+            if (!name || !loc) return alert("Please enter at least a Name and Location");
             
-            saveBtn.innerText = "Saving...";
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = "Saving...";
             
-            // Handle Image (Convert to Base64 for simplicity in this demo)
             let imageBase64 = null;
             if (fileInput.files[0]) {
-                imageBase64 = await toBase64(fileInput.files[0]);
+                try { imageBase64 = await toBase64(fileInput.files[0]); } 
+                catch(e) { console.error(e); }
             }
 
             try {
                 await addDoc(collection(db, "users", currentUser.uid, "items"), {
                     name: name,
-                    name_lower: name.toLowerCase(), // For easier searching
+                    name_lower: name.toLowerCase(),
                     location: loc,
                     description: desc,
                     image: imageBase64,
                     createdAt: serverTimestamp()
                 });
                 
-                // Reset Form
+                // Reset UI
                 document.getElementById('inp-name').value = '';
                 document.getElementById('inp-loc').value = '';
                 document.getElementById('inp-desc').value = '';
                 fileInput.value = '';
-                alert("Stored!");
+                fileLabel.innerHTML = `<i class="fas fa-camera"></i><span>Tap to add photo</span>`;
+                
+                // Optional: Switch to list view automatically
+                // window.showView('list'); 
+                
             } catch (e) {
-                console.error(e);
-                alert("Error saving item.");
+                alert("Error: " + e.message);
             }
-            saveBtn.innerText = "Store Item";
+            saveBtn.innerHTML = originalText;
         });
 
-        // View/Search Logic
+        // --- Load Logic ---
         const listContainer = document.getElementById('inventory-list');
         const searchBar = document.getElementById('search-bar');
         let allItems = [];
@@ -261,22 +411,28 @@
         function renderList(items) {
             listContainer.innerHTML = '';
             if (items.length === 0) {
-                listContainer.innerHTML = '<p style="text-align:center">Nothing in inventory yet.</p>';
+                listContainer.innerHTML = `
+                    <div style="text-align:center; margin-top:50px; opacity:0.6">
+                        <i class="fas fa-ghost" style="font-size:40px; margin-bottom:10px;"></i>
+                        <p>No items found.</p>
+                    </div>`;
                 return;
             }
 
             items.forEach(item => {
                 const imgHTML = item.image 
-                    ? `<img src="${item.image}" class="item-img" class="neu-card">` 
-                    : `<div class="item-img neu-btn" style="display:flex;align-items:center;justify-content:center;font-size:20px;">📦</div>`;
+                    ? `<img src="${item.image}" class="item-img">` 
+                    : `<i class="fas fa-box item-icon"></i>`;
 
                 const html = `
-                <div class="neu-card item-card">
-                    ${imgHTML}
-                    <div class="item-details">
+                <div class="item-card">
+                    <div class="item-img-box">
+                        ${imgHTML}
+                    </div>
+                    <div class="item-info">
                         <h3>${item.name}</h3>
-                        <div class="location-tag">📍 ${item.location}</div>
-                        <p style="font-size:0.8rem; margin: 5px 0 0 0;">${item.description || ''}</p>
+                        <div class="tag-loc"><i class="fas fa-map-marker-alt"></i> ${item.location}</div>
+                        <p class="item-desc">${item.description || ''}</p>
                     </div>
                 </div>`;
                 listContainer.innerHTML += html;
@@ -291,7 +447,6 @@
             renderList(filtered);
         });
 
-        // Utility: File to Base64
         const toBase64 = file => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -299,7 +454,7 @@
             reader.onerror = error => reject(error);
         });
 
-        // UI View Switcher
+        // --- View Switcher ---
         window.showView = (viewName) => {
             document.getElementById('view-add').classList.add('hidden');
             document.getElementById('view-list').classList.add('hidden');
