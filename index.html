@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Knack</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
     <style>
         :root {
             --bg: #ecf0f3;
@@ -75,7 +79,7 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(236, 240, 243, 0.95);
             backdrop-filter: blur(15px);
-            z-index: 998; /* Below onboarding, above app */
+            z-index: 998;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -86,12 +90,12 @@
         .welcome-content h1 { font-size: 2.5rem; color: var(--primary); margin: 0; }
         .welcome-content p { font-size: 1.2rem; color: var(--text-main); font-weight: 700; margin-top: 10px;}
 
-        /* --- ONBOARDING OVERLAY (FIXED) --- */
+        /* --- ONBOARDING OVERLAY --- */
         #onboarding-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg);
-            z-index: 2000; /* Highest */
+            z-index: 2000;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -100,9 +104,9 @@
 
         .slider-container {
             width: 100%;
-            max-width: 450px; /* Constrain width */
+            max-width: 450px;
             flex-grow: 1;
-            overflow: hidden; /* Hides the other cards */
+            overflow: hidden;
             position: relative;
             display: flex;
             align-items: center;
@@ -111,23 +115,28 @@
         .slider-track {
             display: flex;
             height: auto;
-            /* WIDTH FIX: Don't set width here, let flex handle it */
             transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
             width: 100%;
         }
 
         .slide {
-            min-width: 100%; /* FIX: Force each slide to take full container width */
+            min-width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
             text-align: center;
-            flex-shrink: 0; /* FIX: Prevent slides from squishing */
+            flex-shrink: 0;
         }
 
-        .slide-icon { font-size: 60px; margin-bottom: 20px; }
+        /* Lottie Animation Sizing */
+        .slide lottie-player {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+        }
+
         .slide h2 { font-size: 1.8rem; color: var(--primary); margin-bottom: 10px; font-weight: 900; }
         .slide p { font-size: 1rem; color: var(--text-light); line-height: 1.5; font-weight: 600; margin-bottom: 0; }
 
@@ -180,7 +189,6 @@
             transform: translateY(2px); color: var(--accent);
         }
         
-        /* Modal & Edit Styles */
         #edit-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(45, 52, 54, 0.4); backdrop-filter: blur(5px);
@@ -257,28 +265,28 @@
             <div class="slider-track" id="slider-track">
                 <div class="slide">
                     <div class="neu-card" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <div class="slide-icon">👋</div>
+                        <lottie-player src="https://assets5.lottiefiles.com/packages/lf20_puciaact.json" background="transparent" speed="1" loop autoplay></lottie-player>
                         <h2>Welcome to Knack</h2>
                         <p>Lose your knack of<br>losing things.</p>
                     </div>
                 </div>
                 <div class="slide">
                     <div class="neu-card" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <div class="slide-icon">☁️</div>
+                        <lottie-player src="https://assets9.lottiefiles.com/packages/lf20_khtdb0.json" background="transparent" speed="1" loop autoplay></lottie-player>
                         <h2>Sync Everything</h2>
                         <p>All your items,<br>synced across your devices.</p>
                     </div>
                 </div>
                 <div class="slide">
                     <div class="neu-card" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <div class="slide-icon">🔒</div>
+                        <lottie-player src="https://assets7.lottiefiles.com/packages/lf20_bft7k8.json" background="transparent" speed="1" loop autoplay></lottie-player>
                         <h2>Private & Safe</h2>
                         <p>All data stored privately<br>on Firebase, encrypted.</p>
                     </div>
                 </div>
                 <div class="slide">
                     <div class="neu-card" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <div class="slide-icon">🎉</div>
+                        <lottie-player src="https://assets5.lottiefiles.com/packages/lf20_jbrw3hcz.json" background="transparent" speed="1" loop autoplay></lottie-player>
                         <h2>You are ready</h2>
                         <p>Have fun<br>losing things!</p>
                     </div>
