@@ -118,31 +118,67 @@
             min-height: 100vh;
         }
 
-        /* --- Welcome Splash --- */
-        #welcome-overlay {
+        /* --- OVERLAYS --- */
+        #welcome-overlay, #install-guard-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(224, 229, 236, 0.95);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            z-index: 998;
+            z-index: 3000; /* Highest priority */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
             transition: opacity 0.8s ease-in-out, visibility 0.8s;
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
+        }
+        
+        #welcome-overlay { z-index: 998; opacity: 0; visibility: hidden; pointer-events: none; }
+        #welcome-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
+
+        /* Install Guard Specifics */
+        #install-guard-overlay {
+            z-index: 4000;
+            padding: 40px;
+        }
+        .hidden { display: none !important; }
+
+        .install-icon-circle {
+            width: 80px; height: 80px;
+            background: #e0e5ec;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+            margin-bottom: 25px;
+            font-size: 32px;
+            color: var(--text-main);
+        }
+        
+        .install-steps {
+            background: rgba(255,255,255,0.4);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 320px;
+            text-align: left;
+            border: 1px solid rgba(255,255,255,0.5);
         }
 
-        #welcome-overlay.active {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
+        .step-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 0.95rem;
         }
+        .step-row:last-child { margin-bottom: 0; }
+        .step-icon { width: 24px; text-align: center; color: var(--primary); }
 
+        /* Welcome Content */
         .welcome-content {
             display: flex;
             flex-direction: column;
@@ -278,7 +314,6 @@
             transform: scale(0.98);
         }
         
-        /* Disabled Button Style for Offline Mode */
         .neu-btn:disabled {
             box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
             opacity: 0.6;
@@ -375,7 +410,6 @@
         .footer { margin-top: auto; text-align: center; font-size: 0.85rem; color: var(--text-light); font-weight: 600; padding-bottom: 20px; font-family: 'Inter', sans-serif;}
         .hidden { display: none !important; }
 
-        /* Logout Button Specifics */
         .logout-btn-style {
             color: #ec407a;
         }
@@ -414,7 +448,6 @@
             visibility: visible;
         }
 
-        /* QR Animation */
         .qr-card {
             text-align: center;
             animation: popIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -424,7 +457,6 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Profile Pic Styling */
         .profile-pic {
             width: 120px;
             height: 120px;
@@ -447,6 +479,18 @@
     </div>
 
     <div id="toast-notification">Stashed ✨</div>
+
+    <div id="install-guard-overlay" class="hidden">
+        <div class="install-icon-circle">
+            <i class="fas fa-download"></i>
+        </div>
+        <h2 style="font-size: 1.8rem; margin-bottom: 10px;">Almost there.</h2>
+        <p style="color: var(--text-light); font-size: 1.1rem; max-width: 90%;">Get to know your stuff better, install Knack to continue.</p>
+        
+        <div class="install-steps">
+            <div id="install-instructions"></div>
+        </div>
+    </div>
 
     <div id="onboarding-overlay" class="hidden">
         <div class="slider-container">
@@ -654,6 +698,57 @@
 
         // Auth
         loginBtn.addEventListener('click', () => signInWithPopup(auth, provider));
+
+        // --- INSTALL GUARD LOGIC ---
+        function checkStandalone() {
+            // Check if mobile
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            // If desktop, do nothing (let them use the app)
+            if (!isMobile) return;
+
+            // Check if running in standalone (PWA) mode
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+            if (!isStandalone) {
+                // Determine OS for instructions
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                const instructionsDiv = document.getElementById('install-instructions');
+                const guardOverlay = document.getElementById('install-guard-overlay');
+
+                if (isIOS) {
+                    instructionsDiv.innerHTML = `
+                        <div class="step-row">
+                            <div class="step-icon"><i class="fas fa-share-square"></i></div>
+                            <div>Tap the <strong>Share</strong> button</div>
+                        </div>
+                        <div class="step-row">
+                            <div class="step-icon"><i class="fas fa-plus-square"></i></div>
+                            <div>Select <strong>Add to Home Screen</strong></div>
+                        </div>
+                    `;
+                } else {
+                    // Default to Android/Chrome instructions
+                    instructionsDiv.innerHTML = `
+                        <div class="step-row">
+                            <div class="step-icon"><i class="fas fa-ellipsis-v"></i></div>
+                            <div>Tap the <strong>Menu</strong> (3 dots)</div>
+                        </div>
+                        <div class="step-row">
+                            <div class="step-icon"><i class="fas fa-mobile-alt"></i></div>
+                            <div>Select <strong>Install App</strong></div>
+                        </div>
+                    `;
+                }
+
+                // Show the guard overlay
+                guardOverlay.classList.remove('hidden');
+            }
+        }
+        
+        // Run check on load
+        checkStandalone();
+
 
         // --- OFFLINE / ONLINE DETECTION ---
         const saveBtn = document.getElementById('save-btn');
