@@ -37,7 +37,6 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
         fetch(e.request)
             .then((response) => {
-                // Optional: Clone and cache new requests dynamically
                 return response;
             })
             .catch(() => {

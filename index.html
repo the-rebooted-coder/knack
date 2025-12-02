@@ -1288,10 +1288,13 @@
                     reg.update().then(() => {
                         setTimeout(() => {
                             checkUpdateBtn.innerHTML = btnHtml;
-                            // If no update found, simple toast
-                            if (!newWorker) {
-                                showToast("You are up to date! ✅");
+                            
+                            // Check if a worker is installing (update found) or waiting
+                            if (!reg.installing && !reg.waiting) {
+                                // No update found
+                                showToast("No updates available ✨");
                             }
+                            // If reg.installing exists, the 'updatefound' listener handles the Overlay
                         }, 1000);
                     });
                 });
