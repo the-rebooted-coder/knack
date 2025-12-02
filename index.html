@@ -568,6 +568,25 @@
             color: var(--primary);
             box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
         }
+        
+        /* Settings Section Header */
+        .settings-header {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-light);
+            margin: 20px 0 10px 0;
+            text-align: left;
+            width: 100%;
+            padding-left: 5px;
+            opacity: 0.8;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
 
     </style>
 </head>
@@ -763,11 +782,23 @@
                     <h2 id="settings-name">Settings</h2>
                     <p style="color: var(--text-light); margin-bottom: 30px;">Manage your Knack experience</p>
 
-                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
                         
                         <button id="toggle-theme-btn" class="neu-btn" style="color: var(--text-main);">
                             <i id="theme-icon" class="fas fa-adjust"></i> <span id="theme-text">System Theme</span>
                         </button>
+                        
+                        <div class="settings-header">Data Management</div>
+                        
+                        <div class="settings-grid">
+                            <button id="export-btn" class="neu-btn" style="color: var(--text-main);">
+                                <i class="fas fa-download"></i> Export Data
+                            </button>
+                            <button id="import-btn" class="neu-btn" style="color: var(--text-main);">
+                                <i class="fas fa-upload"></i> Import Data
+                            </button>
+                        </div>
+                        <input type="file" id="import-file" accept=".json" style="display:none">
 
                         <div id="desktop-share-btn" class="hidden">
                             <button onclick="showQR()" class="neu-btn" style="color: var(--text-main);">
@@ -780,6 +811,8 @@
                                 <i class="fas fa-desktop"></i> Send Knack to Desktop
                             </button>
                         </div>
+                        
+                        <div class="settings-header">App Info</div>
                         
                         <button id="check-update-btn" class="neu-btn" style="color: var(--text-main);">
                             <i class="fas fa-sync"></i> Check for Updates
@@ -849,6 +882,11 @@
         const nextSlideBtn = document.getElementById('next-slide-btn');
         const dots = document.querySelectorAll('.dot');
         let currentSlide = 0;
+        
+        // Data Management Refs
+        const exportBtn = document.getElementById('export-btn');
+        const importBtn = document.getElementById('import-btn');
+        const importFile = document.getElementById('import-file');
 
         const greetings = ["Welcome back,", "Good to see you,", "Ready to organize,", "Hi there,", "Let's get sorted,", "Hello,"];
 
@@ -1178,6 +1216,58 @@
                 toast.classList.remove('show');
             }, 2500);
         }
+
+        // --- EXPORT / IMPORT FUNCTIONALITY ---
+        exportBtn.addEventListener('click', () => {
+            if (!allItems || allItems.length === 0) return showToast("Nothing to export! 🤷‍♂️");
+            
+            const dataStr = JSON.stringify(allItems, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `knack_backup_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast("Exported 📥");
+        });
+
+        importBtn.addEventListener('click', () => importFile.click());
+
+        importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if (!Array.isArray(data)) throw new Error("Invalid format");
+
+                    if(!confirm(`Import ${data.length} items? This will add to your existing list.`)) return;
+
+                    showToast("Importing... ⏳");
+
+                    const promises = data.map(item => {
+                        // Sanitize: remove ID to let firestore generate new one, but keep everything else
+                        const { id, ...rest } = item;
+                        return addDoc(collection(db, "users", currentUser.uid, "items"), {
+                            ...rest,
+                            createdAt: serverTimestamp() // Set imported time to now so they show at top
+                        });
+                    });
+
+                    await Promise.all(promises);
+                    showToast("Import Successful ✅");
+                    e.target.value = ''; // Reset input
+                } catch (err) {
+                    alert("Import Failed: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        });
+
 
         // --- INVENTORY LOGIC ---
         const fileInput = document.getElementById('inp-file');
