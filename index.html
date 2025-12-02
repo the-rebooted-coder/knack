@@ -1261,7 +1261,7 @@
             document.querySelectorAll('.item-menu-dropdown').forEach(el => el.classList.add('hidden'));
         }
 
-        // --- UPDATE CHECKER LOGIC ---
+        // --- UPDATE CHECKER LOGIC (CORRECTED) ---
         let newWorker;
         const checkUpdateBtn = document.getElementById('check-update-btn');
         const updateOverlay = document.getElementById('update-overlay');
@@ -1270,7 +1270,13 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').then(reg => {
                 
-                // 1. Listen for updates automatically
+                // 1. Check for existing waiting worker on load
+                if (reg.waiting) {
+                    newWorker = reg.waiting;
+                    updateOverlay.classList.add('active');
+                }
+
+                // 2. Listen for new updates automatically
                 reg.addEventListener('updatefound', () => {
                     newWorker = reg.installing;
                     newWorker.addEventListener('statechange', () => {
@@ -1281,7 +1287,7 @@
                     });
                 });
 
-                // 2. Button Logic (Manual Check)
+                // 3. Button Logic (Manual Check)
                 checkUpdateBtn.addEventListener('click', () => {
                     const btnHtml = checkUpdateBtn.innerHTML;
                     checkUpdateBtn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Checking...`;
@@ -1290,27 +1296,41 @@
                         setTimeout(() => {
                             checkUpdateBtn.innerHTML = btnHtml;
                             
-                            // Check if a worker is installing (update found) or waiting
-                            if (!reg.installing && !reg.waiting) {
-                                // No update found
+                            // Check if a worker is waiting (crucial fix)
+                            if (reg.waiting) {
+                                newWorker = reg.waiting;
+                                updateOverlay.classList.add('active');
+                            } else if (!reg.installing) {
+                                // No update found/installing
                                 showToast("No updates available ✨");
                             }
-                            // If reg.installing exists, the 'updatefound' listener handles the Overlay
                         }, 1000);
                     });
                 });
 
             }).catch(err => console.log('SW Registration failed', err));
 
-            // 3. Reload when new SW takes control
+            // 4. Reload when new SW takes control
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 window.location.reload();
             });
         }
 
         applyUpdateBtn.addEventListener('click', () => {
+            // Visual feedback
+            applyUpdateBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Updating...`;
+            
             if (newWorker) {
                 newWorker.postMessage({ type: 'SKIP_WAITING' });
+            } else {
+                // Fallback mechanism to find the waiting worker
+                navigator.serviceWorker.getRegistration().then(reg => {
+                    if (reg && reg.waiting) {
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    } else {
+                        window.location.reload(); // Last resort
+                    }
+                });
             }
         });
 

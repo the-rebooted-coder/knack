@@ -1,4 +1,4 @@
-const CACHE_NAME = 'knack-static-v1'; 
+const CACHE_NAME = 'knack-static-v2'; // Bumped version to v2
 const ASSETS = [
     './',
     './index.html',
