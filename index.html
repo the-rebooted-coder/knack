@@ -588,6 +588,31 @@
             gap: 15px;
         }
 
+        /* --- LOAD MORE BTN --- */
+        .load-more-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 20px 0 50px 0;
+        }
+        .load-more-btn {
+            background: var(--bg);
+            color: var(--text-light);
+            border: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 10px 25px;
+            border-radius: 20px;
+            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .load-more-btn:active {
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
+            transform: scale(0.98);
+        }
+
     </style>
 </head>
 <body>
@@ -770,9 +795,13 @@
             <div id="view-list" class="hidden">
                 <div style="margin-bottom: 15px;">
                     <input type="text" id="search-bar" class="neu-input" placeholder="🔍 Search..." style="margin-bottom: 15px;">
+                    <!-- Filter Container -->
                     <div id="location-filters" class="filter-scroll"></div>
                 </div>
                 <div id="inventory-list"></div>
+                <div id="load-more-area" class="load-more-container hidden">
+                    <button class="load-more-btn" onclick="window.loadMore()">Load More</button>
+                </div>
             </div>
 
             <div id="view-more" class="hidden">
@@ -784,10 +813,12 @@
 
                     <div style="display: flex; flex-direction: column; gap: 15px;">
                         
+                        <!-- Theme Section -->
                         <button id="toggle-theme-btn" class="neu-btn" style="color: var(--text-main);">
                             <i id="theme-icon" class="fas fa-adjust"></i> <span id="theme-text">System Theme</span>
                         </button>
                         
+                        <!-- Data Management Section -->
                         <div class="settings-header">Data Management</div>
                         
                         <div class="settings-grid">
@@ -800,6 +831,7 @@
                         </div>
                         <input type="file" id="import-file" accept=".json" style="display:none">
 
+                        <!-- Device Links -->
                         <div id="desktop-share-btn" class="hidden">
                             <button onclick="showQR()" class="neu-btn" style="color: var(--text-main);">
                                 <i class="fas fa-mobile-alt"></i> Send Knack to Phone
@@ -812,6 +844,7 @@
                             </button>
                         </div>
                         
+                        <!-- App Management -->
                         <div class="settings-header">App Info</div>
                         
                         <button id="check-update-btn" class="neu-btn" style="color: var(--text-main);">
@@ -854,7 +887,11 @@
 
         let currentUser = null;
         let inventoryUnsub = null;
-        let allItems = [];
+        let allItems = []; // Contains ALL fetched data
+        let currentFilteredItems = []; // Contains result of search/filter
+        let renderedCount = 10; // How many are currently in DOM
+        const BATCH_SIZE = 10; // How many to add on Load More
+
         let logoutConfirmation = false;
         
         // --- FILTER VARIABLES ---
@@ -1326,19 +1363,25 @@
 
         const listContainer = document.getElementById('inventory-list');
         const searchBar = document.getElementById('search-bar');
+        const loadMoreArea = document.getElementById('load-more-area');
 
         function loadInventory() {
             if (!currentUser) return;
-            const q = query(collection(db, "users", currentUser.uid, "items"), orderBy("createdAt", "desc"));
+            // CHANGED: Order by name_lower ascending (Alphabetical)
+            const q = query(collection(db, "users", currentUser.uid, "items"), orderBy("name_lower", "asc"));
             inventoryUnsub = onSnapshot(q, (snapshot) => {
                 allItems = [];
                 snapshot.forEach(doc => allItems.push({id: doc.id, ...doc.data()}));
-                renderFilters(); // Initial render of filters
-                filterItems();   // Initial render of list
+                
+                // Re-render filters
+                renderFilters();
+                
+                // Re-run filtering/searching to maintain state
+                filterItems(true); // true = reset pagination to top
             });
         }
 
-        // --- NEW FILTERING LOGIC ---
+        // --- FILTERING & PAGINATION LOGIC ---
         function renderFilters() {
             const locs = [...new Set(allItems.map(i => i.location))].sort();
             const container = document.getElementById('location-filters');
@@ -1346,7 +1389,7 @@
             let html = `<button class="filter-chip ${activeLocation === 'All' ? 'active' : ''}" onclick="window.setFilter('All')">All</button>`;
             
             locs.forEach(loc => {
-                if(loc) { // avoid empty or null locations
+                if(loc) { 
                      html += `<button class="filter-chip ${activeLocation === loc ? 'active' : ''}" onclick="window.setFilter('${loc.replace(/'/g, "\\'")}')">${loc}</button>`;
                 }
             });
@@ -1356,48 +1399,47 @@
 
         window.setFilter = (loc) => {
             activeLocation = loc;
-            filterItems();
-            renderFilters(); // Re-render to update active state
+            filterItems(true); // Reset to top when changing filter
+            renderFilters();
         }
 
-        function filterItems() {
+        function filterItems(resetPagination = false) {
             const term = document.getElementById('search-bar').value.toLowerCase();
-            const filtered = allItems.filter(item => {
+            
+            // 1. Filter the Full List
+            currentFilteredItems = allItems.filter(item => {
                 const matchesSearch = item.name_lower.includes(term) || item.location.toLowerCase().includes(term);
                 const matchesLoc = activeLocation === 'All' || item.location === activeLocation;
                 return matchesSearch && matchesLoc;
             });
-            renderList(filtered);
-        }
 
-        // --- GLOBAL CACHE FUNCTION ---
-        window.cacheItemImage = function(imgElement, id) {
-            try {
-                const canvas = document.createElement('canvas');
-                canvas.width = imgElement.naturalWidth;
-                canvas.height = imgElement.naturalHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(imgElement, 0, 0);
-
-                const dataURL = canvas.toDataURL('image/jpeg', 0.5);
-                localStorage.setItem(`knack_img_${id}`, dataURL);
-            } catch (e) {
-                console.log("Caching failed:", e);
+            // 2. Handle Pagination Reset
+            if (resetPagination) {
+                renderedCount = BATCH_SIZE;
             }
-        };
 
-        function renderList(items) {
+            // 3. Render
+            renderBatch();
+        }
+        
+        // Function to render chunks to DOM
+        function renderBatch() {
             listContainer.innerHTML = '';
-            if (items.length === 0) {
+            
+            if (currentFilteredItems.length === 0) {
                 listContainer.innerHTML = `
                     <div style="text-align:center; margin-top:50px; opacity:0.6; display:flex; flex-direction:column; align-items:center;">
                         <lottie-player src="https://lottie.host/12c4618d-f75d-4184-858b-a8069d5095aa/QMXzGpliQB.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
                         <p style="font-weight:600;">No items found.</p>
                     </div>`;
+                loadMoreArea.classList.add('hidden');
                 return;
             }
 
-            items.forEach(item => {
+            // Slice only what we need to show
+            const itemsToShow = currentFilteredItems.slice(0, renderedCount);
+
+            itemsToShow.forEach(item => {
                 let imgUrl = item.image; 
                 let cacheOnLoad = "";
                 let crossOrigin = "";
@@ -1442,11 +1484,39 @@
                 </div>`;
                 listContainer.innerHTML += html;
             });
+            
+            // Handle Load More Button Visibility
+            if (renderedCount < currentFilteredItems.length) {
+                loadMoreArea.classList.remove('hidden');
+            } else {
+                loadMoreArea.classList.add('hidden');
+            }
+        }
+        
+        window.loadMore = () => {
+            renderedCount += BATCH_SIZE;
+            renderBatch();
         }
 
-        // Updated Search Listener
+        // --- GLOBAL CACHE FUNCTION ---
+        window.cacheItemImage = function(imgElement, id) {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = imgElement.naturalWidth;
+                canvas.height = imgElement.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(imgElement, 0, 0);
+
+                const dataURL = canvas.toDataURL('image/jpeg', 0.5);
+                localStorage.setItem(`knack_img_${id}`, dataURL);
+            } catch (e) {
+                console.log("Caching failed:", e);
+            }
+        };
+
+        // Search Listener
         searchBar.addEventListener('input', (e) => {
-            filterItems();
+            filterItems(true); // Reset pagination on search
         });
 
         window.toggleMenu = (id) => {
