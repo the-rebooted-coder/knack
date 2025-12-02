@@ -795,7 +795,6 @@
             <div id="view-list" class="hidden">
                 <div style="margin-bottom: 15px;">
                     <input type="text" id="search-bar" class="neu-input" placeholder="🔍 Search..." style="margin-bottom: 15px;">
-                    <!-- Filter Container -->
                     <div id="location-filters" class="filter-scroll"></div>
                 </div>
                 <div id="inventory-list"></div>
@@ -813,12 +812,10 @@
 
                     <div style="display: flex; flex-direction: column; gap: 15px;">
                         
-                        <!-- Theme Section -->
                         <button id="toggle-theme-btn" class="neu-btn" style="color: var(--text-main);">
                             <i id="theme-icon" class="fas fa-adjust"></i> <span id="theme-text">System Theme</span>
                         </button>
                         
-                        <!-- Data Management Section -->
                         <div class="settings-header">Data Management</div>
                         
                         <div class="settings-grid">
@@ -831,7 +828,6 @@
                         </div>
                         <input type="file" id="import-file" accept=".json" style="display:none">
 
-                        <!-- Device Links -->
                         <div id="desktop-share-btn" class="hidden">
                             <button onclick="showQR()" class="neu-btn" style="color: var(--text-main);">
                                 <i class="fas fa-mobile-alt"></i> Send Knack to Phone
@@ -844,7 +840,6 @@
                             </button>
                         </div>
                         
-                        <!-- App Management -->
                         <div class="settings-header">App Info</div>
                         
                         <button id="check-update-btn" class="neu-btn" style="color: var(--text-main);">
@@ -1383,15 +1378,17 @@
 
         // --- FILTERING & PAGINATION LOGIC ---
         function renderFilters() {
-            const locs = [...new Set(allItems.map(i => i.location))].sort();
+            // Get unique locations, filter out empty ones, and sort alphabetically using localeCompare for accuracy
+            const locs = [...new Set(allItems.map(i => i.location))]
+                .filter(l => l && l.trim() !== '') // Remove nulls/empty strings
+                .sort((a, b) => a.localeCompare(b)); // Sort A-Z case-insensitive
+
             const container = document.getElementById('location-filters');
             
             let html = `<button class="filter-chip ${activeLocation === 'All' ? 'active' : ''}" onclick="window.setFilter('All')">All</button>`;
             
             locs.forEach(loc => {
-                if(loc) { 
-                     html += `<button class="filter-chip ${activeLocation === loc ? 'active' : ''}" onclick="window.setFilter('${loc.replace(/'/g, "\\'")}')">${loc}</button>`;
-                }
+                 html += `<button class="filter-chip ${activeLocation === loc ? 'active' : ''}" onclick="window.setFilter('${loc.replace(/'/g, "\\'")}')">${loc}</button>`;
             });
             
             container.innerHTML = html;
