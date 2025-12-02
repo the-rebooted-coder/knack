@@ -54,6 +54,8 @@
             --blob-1: linear-gradient(135deg, #f3f4f6 0%, #d1d5db 100%);
             --blob-2: radial-gradient(circle, #e5e7eb 0%, #9ca3af 100%);
             --blob-3: linear-gradient(to top, #d1d5db 0%, #6b7280 100%);
+            
+            --img-filter: none;
         }
 
         /* --- DARK THEME OVERRIDES --- */
@@ -64,7 +66,6 @@
             --primary: #ffffff;
 
             /* Neumorphism Shadows - Dark */
-            /* Dark mode requires a lighter shadow (top-left) and a darker shadow (bottom-right) */
             --shadow-light: #2c3238; 
             --shadow-dark: #16181b;
 
@@ -76,6 +77,8 @@
             --blob-1: linear-gradient(135deg, #2c3238 0%, #1a1d21 100%);
             --blob-2: radial-gradient(circle, #2c3238 0%, #16181b 100%);
             --blob-3: linear-gradient(to top, #343a40 0%, #212529 100%);
+            
+            --img-filter: brightness(0.85);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -428,8 +431,8 @@
             overflow: hidden; display: flex; align-items: center; justify-content: center;
             position: relative;
         }
-        .item-img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: filter 0.3s;}
-        .item-card:hover .item-img { filter: grayscale(0%); }
+        .item-img { width: 100%; height: 100%; object-fit: cover; filter: var(--img-filter); transition: filter 0.3s;}
+        .item-card:hover .item-img { filter: none; }
         
         .item-info { flex-grow: 1; }
         .item-info h3 { margin: 0 0 6px 0; font-size: 1.2rem; }
@@ -729,7 +732,7 @@
                     <div style="display: flex; flex-direction: column; gap: 20px;">
                         
                         <button id="toggle-theme-btn" class="neu-btn" style="color: var(--text-main);">
-                            <i id="theme-icon" class="fas fa-moon"></i> <span id="theme-text">Dark Mode</span>
+                            <i id="theme-icon" class="fas fa-adjust"></i> <span id="theme-text">System Theme</span>
                         </button>
 
                         <div id="desktop-share-btn" class="hidden">
@@ -812,38 +815,53 @@
 
         const greetings = ["Welcome back,", "Good to see you,", "Ready to organize,", "Hi there,", "Let's get sorted,", "Hello,"];
 
-        // --- THEME LOGIC ---
-        function setTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('knack_theme', theme);
-            
-            // Update browser chrome color dynamically
-            const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-            
-            if(theme === 'dark') {
-                metaThemeColor.setAttribute('content', '#212529');
-                themeIcon.classList.replace('fa-moon', 'fa-sun');
-                themeText.innerText = "Light Mode";
-                if(currentUser) {
-                     // Add subtle difference for images in dark mode (optional)
-                     document.documentElement.style.setProperty('--img-filter', 'brightness(0.9)');
-                }
-            } else {
-                metaThemeColor.setAttribute('content', '#e0e5ec');
-                themeIcon.classList.replace('fa-sun', 'fa-moon');
+        // --- THEME LOGIC (3-Way Toggle) ---
+        let currentThemeSetting = localStorage.getItem('knack_theme') || 'system';
+
+        function applyTheme(setting) {
+            const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            let effectiveTheme = setting;
+
+            // Update UI Button
+            if (setting === 'system') {
+                effectiveTheme = systemDark ? 'dark' : 'light';
+                themeText.innerText = "System Theme";
+                themeIcon.className = "fas fa-adjust";
+            } else if (setting === 'dark') {
                 themeText.innerText = "Dark Mode";
-                document.documentElement.style.setProperty('--img-filter', 'none');
+                themeIcon.className = "fas fa-moon";
+            } else {
+                themeText.innerText = "Light Mode";
+                themeIcon.className = "fas fa-sun";
             }
+
+            // Apply Variables
+            document.documentElement.setAttribute('data-theme', effectiveTheme);
+            
+            // Update Browser Chrome
+            const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+            metaThemeColor.setAttribute('content', effectiveTheme === 'dark' ? '#212529' : '#e0e5ec');
+
+            localStorage.setItem('knack_theme', setting);
+            currentThemeSetting = setting;
         }
 
+        // Toggle Click Listener: System -> Light -> Dark -> System
         toggleThemeBtn.addEventListener('click', () => {
-            const current = localStorage.getItem('knack_theme') || 'light';
-            setTheme(current === 'light' ? 'dark' : 'light');
+            if (currentThemeSetting === 'system') applyTheme('light');
+            else if (currentThemeSetting === 'light') applyTheme('dark');
+            else applyTheme('system');
+        });
+
+        // Listen for System Changes (Only affects if setting is 'system')
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener('change', e => {
+            if (currentThemeSetting === 'system') {
+                applyTheme('system');
+            }
         });
 
         // Init Theme
-        const savedTheme = localStorage.getItem('knack_theme') || 'light';
-        setTheme(savedTheme);
+        applyTheme(currentThemeSetting);
 
 
         // Auth
