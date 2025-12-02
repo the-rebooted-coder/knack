@@ -137,7 +137,7 @@
         }
 
         /* --- OVERLAYS --- */
-        #welcome-overlay, #install-guard-overlay {
+        #welcome-overlay, #install-guard-overlay, #update-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(224, 229, 236, 0.95);
@@ -154,6 +154,10 @@
         
         #welcome-overlay { z-index: 998; opacity: 0; visibility: hidden; pointer-events: none; }
         #welcome-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
+
+        /* Update Overlay */
+        #update-overlay { opacity: 0; visibility: hidden; pointer-events: none; z-index: 5000; }
+        #update-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
 
         /* Install Guard Specifics */
         #install-guard-overlay {
@@ -514,6 +518,23 @@
         </div>
     </div>
 
+    <div id="update-overlay">
+        <div class="neu-card qr-card" style="width: 90%; max-width: 350px; margin: 0; background: #e0e5ec; padding: 40px 20px;">
+            <div class="install-icon-circle" style="margin: 0 auto 20px auto; width: 70px; height: 70px; font-size: 28px; color: var(--primary);">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <h2 style="margin: 10px 0 10px 0;">New Version</h2>
+            <p style="color: var(--text-light); font-size: 1rem; margin-bottom: 30px;">Knack just got better. Update now for the latest features.</p>
+            
+            <button id="apply-update-btn" class="neu-btn">
+                <i class="fas fa-sync-alt"></i> Update Now
+            </button>
+            <button onclick="document.getElementById('update-overlay').classList.remove('active')" class="neu-btn" style="margin-top: 15px; color: var(--text-light); box-shadow: none;">
+                Later
+            </button>
+        </div>
+    </div>
+
     <div id="onboarding-overlay" class="hidden">
         <div class="slider-container">
             <div class="slider-track" id="slider-track">
@@ -675,6 +696,10 @@
                                 <i class="fas fa-desktop"></i> Send Knack to Desktop
                             </button>
                         </div>
+                        
+                        <button id="check-update-btn" class="neu-btn" style="color: var(--text-main);">
+                            <i class="fas fa-sync"></i> Check for Updates
+                        </button>
 
                         <button id="logout-btn" class="neu-btn logout-btn-style">
                             <i class="fas fa-sign-out-alt"></i> Sign Out
@@ -1221,13 +1246,6 @@
             reader.onerror = error => reject(error);
         });
 
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Service Worker registered', reg))
-                .catch(err => console.log('Service Worker error', err));
-        }
-
         window.showView = (viewName) => {
             document.getElementById('view-add').classList.add('hidden');
             document.getElementById('view-list').classList.add('hidden');
@@ -1241,6 +1259,57 @@
             document.getElementById(`nav-${viewName}`).classList.add('active');
             document.querySelectorAll('.item-menu-dropdown').forEach(el => el.classList.add('hidden'));
         }
+
+        // --- UPDATE CHECKER LOGIC ---
+        let newWorker;
+        const checkUpdateBtn = document.getElementById('check-update-btn');
+        const updateOverlay = document.getElementById('update-overlay');
+        const applyUpdateBtn = document.getElementById('apply-update-btn');
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                
+                // 1. Listen for updates automatically
+                reg.addEventListener('updatefound', () => {
+                    newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New update available
+                            updateOverlay.classList.add('active');
+                        }
+                    });
+                });
+
+                // 2. Button Logic (Manual Check)
+                checkUpdateBtn.addEventListener('click', () => {
+                    const btnHtml = checkUpdateBtn.innerHTML;
+                    checkUpdateBtn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Checking...`;
+                    
+                    reg.update().then(() => {
+                        setTimeout(() => {
+                            checkUpdateBtn.innerHTML = btnHtml;
+                            // If no update found, simple toast
+                            if (!newWorker) {
+                                showToast("You are up to date! ✅");
+                            }
+                        }, 1000);
+                    });
+                });
+
+            }).catch(err => console.log('SW Registration failed', err));
+
+            // 3. Reload when new SW takes control
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                window.location.reload();
+            });
+        }
+
+        applyUpdateBtn.addEventListener('click', () => {
+            if (newWorker) {
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+            }
+        });
+
     </script>
 </body>
 </html>
