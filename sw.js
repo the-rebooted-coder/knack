@@ -1,4 +1,4 @@
-const CACHE_NAME = 'knack-static-v2'; // Increment this to trigger update
+const CACHE_NAME = 'knack-static-v1'; 
 const ASSETS = [
     './',
     './index.html',

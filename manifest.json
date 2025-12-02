@@ -1,11 +1,12 @@
 {
   "name": "Knack",
   "short_name": "Knack",
-  "start_url": "index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#e0e5ec",
   "theme_color": "#e0e5ec",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
+  "description": "Lose your knack of losing things. Organize your life with Knack, the smart inventory tracker that syncs across all your devices.",
   "icons": [
     {
       "src": "https://i.ibb.co/PzNRnysP/icon-192.png",
@@ -16,6 +17,50 @@
       "src": "https://i.ibb.co/5gCYMkGv/apple-touch-icon.png",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://i.ibb.co/7dhMsBcc/knack-1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Home Screen"
+    },
+    {
+      "src": "https://i.ibb.co/LzYgHw3n/knack-2.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Add New Item"
+    },
+    {
+      "src": "https://i.ibb.co/3ySrPWjr/knack-3.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Settings & Tools"
+    },
+    {
+      "src": "https://i.ibb.co/spJcdYHp/knack1-front.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop Dashboard"
+    },
+    {
+      "src": "https://i.ibb.co/rKhyxnpF/knack2-front.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop Search"
+    },
+    {
+      "src": "https://i.ibb.co/MkymCZ17/knack3-front.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop Settings"
     }
   ]
 }
