@@ -1,4 +1,4 @@
-const CACHE_NAME = 'knack-static-v3.5';
+const CACHE_NAME = 'knack-static-v3.6';
 const ASSETS = [
     './',
     './index.html',
