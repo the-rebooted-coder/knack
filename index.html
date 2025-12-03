@@ -81,19 +81,6 @@
             --img-filter: brightness(0.85);
         }
 
-        /* --- VIEW TRANSITION ANIMATION OPTIMIZATION --- */
-        ::view-transition-old(root),
-        ::view-transition-new(root) {
-            animation: none;
-            mix-blend-mode: normal;
-            height: 100%;
-        }
-        
-        /* Ensure new view is on top */
-        ::view-transition-new(root) {
-            z-index: 9999;
-        }
-
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
@@ -108,7 +95,7 @@
             overflow-x: hidden;
             position: relative;
             overscroll-behavior-y: none;
-            /* REMOVED TRANSITION TO FIX JITTER */
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
         h1, h2, h3 {
@@ -137,7 +124,7 @@
             border-radius: 50%;
             filter: blur(80px);
             animation: float 20s infinite ease-in-out alternate;
-            /* REMOVED TRANSITION TO FIX JITTER */
+            transition: background 0.4s ease;
         }
 
         .blob-1 { 
@@ -359,7 +346,7 @@
             padding: 30px;
             margin-bottom: 30px;
             position: relative;
-            /* REMOVED TRANSITION TO FIX JITTER */
+            transition: all 0.4s ease;
         }
 
         .item-card.neu-card, #view-add .neu-card {
@@ -371,7 +358,7 @@
             width: 100%; border: none; background: var(--bg); border-radius: 16px;
             box-shadow: inset 6px 6px 10px var(--shadow-dark), inset -6px -6px 10px var(--shadow-light);
             padding: 20px; font-size: 16px; margin-bottom: 20px; color: var(--text-main);
-            font-family: 'Inter', sans-serif; font-weight: 600; outline: none; transition: box-shadow 0.2s;
+            font-family: 'Inter', sans-serif; font-weight: 600; outline: none; transition: box-shadow 0.2s, background 0.4s;
         }
         .neu-input:focus {
             box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
@@ -419,7 +406,7 @@
         .nav-pill {
             display: flex; background: var(--bg); padding: 6px; border-radius: 18px;
             box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); margin-bottom: 30px;
-            /* REMOVED TRANSITION TO FIX JITTER */
+            transition: background 0.4s ease;
         }
         .nav-item {
             flex: 1; text-align: center; padding: 14px; border-radius: 14px;
@@ -436,7 +423,7 @@
             display: flex; align-items: center; background: var(--bg);
             border-radius: 20px; padding: 20px; margin-bottom: 25px;
             box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light); position: relative;
-            /* REMOVED TRANSITION TO FIX JITTER */
+            transition: background 0.4s ease, box-shadow 0.4s ease;
         }
         .item-img-box {
             width: 70px; height: 70px; border-radius: 14px; margin-right: 20px; flex-shrink: 0;
@@ -938,13 +925,14 @@
 
         const greetings = ["Welcome back,", "Good to see you,", "Ready to organize,", "Hi there,", "Let's get sorted,", "Hello,"];
 
-        // --- THEME LOGIC (3-Way Toggle with Circular Reveal) ---
+        // --- THEME LOGIC (3-Way Toggle) ---
         let currentThemeSetting = localStorage.getItem('knack_theme') || 'system';
 
         function applyTheme(setting) {
             const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
             let effectiveTheme = setting;
 
+            // Update UI Button
             if (setting === 'system') {
                 effectiveTheme = systemDark ? 'dark' : 'light';
                 themeText.innerText = "System Theme";
@@ -957,8 +945,10 @@
                 themeIcon.className = "fas fa-sun";
             }
 
+            // Apply Variables
             document.documentElement.setAttribute('data-theme', effectiveTheme);
             
+            // Update Browser Chrome
             const metaThemeColor = document.querySelector('meta[name="theme-color"]');
             metaThemeColor.setAttribute('content', effectiveTheme === 'dark' ? '#212529' : '#e0e5ec');
 
@@ -966,55 +956,14 @@
             currentThemeSetting = setting;
         }
 
-        // --- CIRCULAR REVEAL CLICK HANDLER ---
-        toggleThemeBtn.addEventListener('click', async (e) => {
-            let newSetting;
-            if (currentThemeSetting === 'system') newSetting = 'light';
-            else if (currentThemeSetting === 'light') newSetting = 'dark';
-            else newSetting = 'system';
-
-            // Fallback for browsers that don't support View Transitions
-            if (!document.startViewTransition) {
-                applyTheme(newSetting);
-                return;
-            }
-
-            // Get click coordinates
-            const x = e.clientX;
-            const y = e.clientY;
-
-            // Calculate radius to the furthest corner
-            const endRadius = Math.hypot(
-                Math.max(x, innerWidth - x),
-                Math.max(y, innerHeight - y)
-            );
-
-            // Start Transition
-            const transition = document.startViewTransition(() => {
-                applyTheme(newSetting);
-            });
-
-            // Wait for pseudo-elements to be created
-            await transition.ready;
-
-            // Animate the circle
-            document.documentElement.animate(
-                {
-                    clipPath: [
-                        `circle(0px at ${x}px ${y}px)`,
-                        `circle(${endRadius}px at ${x}px ${y}px)`,
-                    ],
-                },
-                {
-                    duration: 500,
-                    easing: "ease-in",
-                    // Specify which pseudo-element to animate
-                    pseudoElement: "::view-transition-new(root)",
-                }
-            );
+        // Toggle Click Listener: System -> Light -> Dark -> System
+        toggleThemeBtn.addEventListener('click', () => {
+            if (currentThemeSetting === 'system') applyTheme('light');
+            else if (currentThemeSetting === 'light') applyTheme('dark');
+            else applyTheme('system');
         });
 
-        // Listen for System Changes
+        // Listen for System Changes (Only affects if setting is 'system')
         window.matchMedia("(prefers-color-scheme: dark)").addEventListener('change', e => {
             if (currentThemeSetting === 'system') {
                 applyTheme('system');
