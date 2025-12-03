@@ -81,6 +81,18 @@
             --img-filter: brightness(0.85);
         }
 
+        /* --- VIEW TRANSITION ANIMATION --- */
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation: none;
+            mix-blend-mode: normal;
+        }
+        
+        /* Ensure new view is on top */
+        ::view-transition-new(root) {
+            z-index: 9999;
+        }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
@@ -925,14 +937,13 @@
 
         const greetings = ["Welcome back,", "Good to see you,", "Ready to organize,", "Hi there,", "Let's get sorted,", "Hello,"];
 
-        // --- THEME LOGIC (3-Way Toggle) ---
+        // --- THEME LOGIC (3-Way Toggle with Circular Reveal) ---
         let currentThemeSetting = localStorage.getItem('knack_theme') || 'system';
 
         function applyTheme(setting) {
             const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
             let effectiveTheme = setting;
 
-            // Update UI Button
             if (setting === 'system') {
                 effectiveTheme = systemDark ? 'dark' : 'light';
                 themeText.innerText = "System Theme";
@@ -945,10 +956,8 @@
                 themeIcon.className = "fas fa-sun";
             }
 
-            // Apply Variables
             document.documentElement.setAttribute('data-theme', effectiveTheme);
             
-            // Update Browser Chrome
             const metaThemeColor = document.querySelector('meta[name="theme-color"]');
             metaThemeColor.setAttribute('content', effectiveTheme === 'dark' ? '#212529' : '#e0e5ec');
 
@@ -956,14 +965,55 @@
             currentThemeSetting = setting;
         }
 
-        // Toggle Click Listener: System -> Light -> Dark -> System
-        toggleThemeBtn.addEventListener('click', () => {
-            if (currentThemeSetting === 'system') applyTheme('light');
-            else if (currentThemeSetting === 'light') applyTheme('dark');
-            else applyTheme('system');
+        // --- CIRCULAR REVEAL CLICK HANDLER ---
+        toggleThemeBtn.addEventListener('click', async (e) => {
+            let newSetting;
+            if (currentThemeSetting === 'system') newSetting = 'light';
+            else if (currentThemeSetting === 'light') newSetting = 'dark';
+            else newSetting = 'system';
+
+            // Fallback for browsers that don't support View Transitions
+            if (!document.startViewTransition) {
+                applyTheme(newSetting);
+                return;
+            }
+
+            // Get click coordinates
+            const x = e.clientX;
+            const y = e.clientY;
+
+            // Calculate radius to the furthest corner
+            const endRadius = Math.hypot(
+                Math.max(x, innerWidth - x),
+                Math.max(y, innerHeight - y)
+            );
+
+            // Start Transition
+            const transition = document.startViewTransition(() => {
+                applyTheme(newSetting);
+            });
+
+            // Wait for pseudo-elements to be created
+            await transition.ready;
+
+            // Animate the circle
+            document.documentElement.animate(
+                {
+                    clipPath: [
+                        `circle(0px at ${x}px ${y}px)`,
+                        `circle(${endRadius}px at ${x}px ${y}px)`,
+                    ],
+                },
+                {
+                    duration: 500,
+                    easing: "ease-in",
+                    // Specify which pseudo-element to animate
+                    pseudoElement: "::view-transition-new(root)",
+                }
+            );
         });
 
-        // Listen for System Changes (Only affects if setting is 'system')
+        // Listen for System Changes
         window.matchMedia("(prefers-color-scheme: dark)").addEventListener('change', e => {
             if (currentThemeSetting === 'system') {
                 applyTheme('system');
