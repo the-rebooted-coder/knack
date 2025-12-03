@@ -1425,6 +1425,9 @@
 
                 // Re-run filtering/searching to maintain state
                 filterItems(true); // true = reset pagination to top
+
+                // *** NEW STEP: Update Placeholder ***
+                document.getElementById('search-bar').placeholder = `🔍 Search across ${allItems.length} items...`;
             });
         }
 
