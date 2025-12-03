@@ -81,11 +81,12 @@
             --img-filter: brightness(0.85);
         }
 
-        /* --- VIEW TRANSITION ANIMATION --- */
+        /* --- VIEW TRANSITION ANIMATION OPTIMIZATION --- */
         ::view-transition-old(root),
         ::view-transition-new(root) {
             animation: none;
             mix-blend-mode: normal;
+            height: 100%;
         }
         
         /* Ensure new view is on top */
@@ -107,7 +108,7 @@
             overflow-x: hidden;
             position: relative;
             overscroll-behavior-y: none;
-            transition: background-color 0.4s ease, color 0.4s ease;
+            /* REMOVED TRANSITION TO FIX JITTER */
         }
 
         h1, h2, h3 {
@@ -136,7 +137,7 @@
             border-radius: 50%;
             filter: blur(80px);
             animation: float 20s infinite ease-in-out alternate;
-            transition: background 0.4s ease;
+            /* REMOVED TRANSITION TO FIX JITTER */
         }
 
         .blob-1 { 
@@ -358,7 +359,7 @@
             padding: 30px;
             margin-bottom: 30px;
             position: relative;
-            transition: all 0.4s ease;
+            /* REMOVED TRANSITION TO FIX JITTER */
         }
 
         .item-card.neu-card, #view-add .neu-card {
@@ -370,7 +371,7 @@
             width: 100%; border: none; background: var(--bg); border-radius: 16px;
             box-shadow: inset 6px 6px 10px var(--shadow-dark), inset -6px -6px 10px var(--shadow-light);
             padding: 20px; font-size: 16px; margin-bottom: 20px; color: var(--text-main);
-            font-family: 'Inter', sans-serif; font-weight: 600; outline: none; transition: box-shadow 0.2s, background 0.4s;
+            font-family: 'Inter', sans-serif; font-weight: 600; outline: none; transition: box-shadow 0.2s;
         }
         .neu-input:focus {
             box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
@@ -418,7 +419,7 @@
         .nav-pill {
             display: flex; background: var(--bg); padding: 6px; border-radius: 18px;
             box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); margin-bottom: 30px;
-            transition: background 0.4s ease;
+            /* REMOVED TRANSITION TO FIX JITTER */
         }
         .nav-item {
             flex: 1; text-align: center; padding: 14px; border-radius: 14px;
@@ -435,7 +436,7 @@
             display: flex; align-items: center; background: var(--bg);
             border-radius: 20px; padding: 20px; margin-bottom: 25px;
             box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light); position: relative;
-            transition: background 0.4s ease, box-shadow 0.4s ease;
+            /* REMOVED TRANSITION TO FIX JITTER */
         }
         .item-img-box {
             width: 70px; height: 70px; border-radius: 14px; margin-right: 20px; flex-shrink: 0;
