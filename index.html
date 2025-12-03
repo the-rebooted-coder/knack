@@ -775,7 +775,10 @@
                 <div class="neu-card">
                     <h2 style="margin-bottom: 25px;">Stash Item</h2>
                     <input type="text" id="inp-name" class="neu-input" placeholder="What is it?*">
-                    <input type="text" id="inp-loc" class="neu-input" placeholder="Where is it?*">
+                    
+                    <input type="text" id="inp-loc" class="neu-input" placeholder="Where is it?*" list="location-suggestions">
+                    <datalist id="location-suggestions"></datalist>
+
                     <textarea id="inp-desc" class="neu-input" placeholder="Anything else about it?" rows="2"></textarea>
                     
                     <div class="file-upload-wrapper">
@@ -1417,9 +1420,23 @@
                 // Re-render filters
                 renderFilters();
                 
+                // Update Location Suggestions for Add Screen
+                updateLocationSuggestions();
+
                 // Re-run filtering/searching to maintain state
                 filterItems(true); // true = reset pagination to top
             });
+        }
+
+        // --- NEW: UPDATE LOCATION DATALIST ---
+        function updateLocationSuggestions() {
+            // Extract unique locations
+            const uniqueLocs = [...new Set(allItems.map(item => item.location))]
+                .filter(l => l && l.trim() !== '')
+                .sort();
+
+            const datalist = document.getElementById('location-suggestions');
+            datalist.innerHTML = uniqueLocs.map(loc => `<option value="${loc}">`).join('');
         }
 
         // --- FILTERING & PAGINATION LOGIC ---
