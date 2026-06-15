@@ -177,7 +177,7 @@
         }
 
         /* --- OVERLAYS --- */
-        #welcome-overlay, #install-guard-overlay, #update-overlay {
+        #welcome-overlay, #install-guard-overlay, #update-overlay, #import-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: var(--overlay-bg);
@@ -195,9 +195,9 @@
         #welcome-overlay { z-index: 998; opacity: 0; visibility: hidden; pointer-events: none; }
         #welcome-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
 
-        /* Update Overlay */
-        #update-overlay { opacity: 0; visibility: hidden; pointer-events: none; z-index: 5000; }
-        #update-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
+        /* Update Overlay & Import Overlay */
+        #update-overlay, #import-overlay { opacity: 0; visibility: hidden; pointer-events: none; z-index: 5000; }
+        #update-overlay.active, #import-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
 
         /* Install Guard Specifics */
         #install-guard-overlay {
@@ -655,6 +655,16 @@
             <button onclick="document.getElementById('update-overlay').classList.remove('active')" class="neu-btn" style="margin-top: 15px; color: var(--text-light); box-shadow: none;">
                 Later
             </button>
+        </div>
+    </div>
+
+    <div id="import-overlay">
+        <div class="neu-card qr-card" style="width: 90%; max-width: 350px; margin: 0; background: var(--bg); padding: 40px 20px;">
+            <div class="install-icon-circle" style="margin: 0 auto 20px auto; width: 70px; height: 70px; font-size: 28px; color: var(--primary);">
+                <i class="fas fa-magic"></i>
+            </div>
+            <h2 style="margin: 10px 0 10px 0;">Importing...</h2>
+            <p id="import-status-text" style="color: var(--text-light); font-size: 1rem; margin-bottom: 0;">Please wait while we generate AI icons for your items. Do not close the app.</p>
         </div>
     </div>
 
@@ -1270,6 +1280,23 @@
 
         importBtn.addEventListener('click', () => importFile.click());
 
+        const fetchAIImageBase64 = async (name) => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                };
+                img.onerror = () => resolve(null);
+                img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(name)}%20minimal%20isolated%20white%20background?width=150&height=150&nologo=true`;
+            });
+        };
+
         importFile.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -1282,21 +1309,30 @@
 
                     if(!confirm(`Import ${data.length} items? This will add to your existing list.`)) return;
 
-                    showToast("Importing... ⏳");
+                    document.getElementById('import-overlay').classList.add('active');
+                    const statusText = document.getElementById('import-status-text');
 
-                    const promises = data.map(item => {
-                        // Sanitize: remove ID to let firestore generate new one, but keep everything else
+                    for (let i = 0; i < data.length; i++) {
+                        let item = data[i];
+                        statusText.innerText = `Generating AI icon... (${i + 1}/${data.length})`;
+                        
+                        if (!item.image) {
+                            item.image = await fetchAIImageBase64(item.name) || null;
+                        }
+
                         const { id, ...rest } = item;
-                        return addDoc(collection(db, "users", currentUser.uid, "items"), {
+                        statusText.innerText = `Saving item... (${i + 1}/${data.length})`;
+                        await addDoc(collection(db, "users", currentUser.uid, "items"), {
                             ...rest,
-                            createdAt: serverTimestamp() // Set imported time to now so they show at top
+                            createdAt: serverTimestamp()
                         });
-                    });
+                    }
 
-                    await Promise.all(promises);
+                    document.getElementById('import-overlay').classList.remove('active');
                     showToast("Import Successful ✅");
                     e.target.value = ''; // Reset input
                 } catch (err) {
+                    document.getElementById('import-overlay').classList.remove('active');
                     alert("Import Failed: " + err.message);
                 }
             };
